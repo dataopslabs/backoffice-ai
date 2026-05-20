@@ -1,0 +1,567 @@
+openapi: 3.1.0
+info:
+  title: BackOfficePilot Control Plane API
+  version: 0.1.0
+  description: |
+    The customer-facing and operator-facing control plane for BackOfficePilot.
+    This document is the source of truth for both the FastAPI server stubs and the
+    Next.js TypeScript client. See SPEC-API-001 for conventions.
+  contact:
+    name: BackOfficePilot
+    url: https://backofficepilot.ai
+
+servers:
+  - url: https://api.backofficepilot.ai
+    description: Production
+  - url: https://api.uat.backofficepilot.ai
+    description: UAT
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: customers
+  - name: workflows
+  - name: agents
+  - name: runs
+  - name: steps
+  - name: escalations
+  - name: policy-bundles
+  - name: cost
+
+paths:
+  /customers:
+    get:
+      operationId: listCustomers
+      tags: [customers]
+      summary: List customers (operator only)
+      security: [{ bearerAuth: [operator] }]
+      parameters:
+        - { $ref: "#/components/parameters/Cursor" }
+        - { $ref: "#/components/parameters/Limit" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CursorPage_Customer" }
+        default: { $ref: "#/components/responses/Problem" }
+
+  /customers/{customerId}:
+    get:
+      operationId: getCustomer
+      tags: [customers]
+      summary: Get a single customer
+      parameters:
+        - { $ref: "#/components/parameters/CustomerId" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Customer" }
+        default: { $ref: "#/components/responses/Problem" }
+
+  /customers/{customerId}/workflows:
+    get:
+      operationId: listWorkflows
+      tags: [workflows]
+      parameters:
+        - { $ref: "#/components/parameters/CustomerId" }
+        - { $ref: "#/components/parameters/Cursor" }
+        - { $ref: "#/components/parameters/Limit" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CursorPage_Workflow" }
+        default: { $ref: "#/components/responses/Problem" }
+    put:
+      operationId: upsertWorkflow
+      tags: [workflows]
+      summary: Upsert a workflow definition (operator only)
+      security: [{ bearerAuth: [operator] }]
+      parameters:
+        - { $ref: "#/components/parameters/CustomerId" }
+        - { $ref: "#/components/parameters/IdempotencyKey" }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/WorkflowDraft" }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Workflow" }
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Workflow" }
+        default: { $ref: "#/components/responses/Problem" }
+
+  /customers/{customerId}/workflows/{workflowId}/runs:
+    get:
+      operationId: listRuns
+      tags: [runs]
+      parameters:
+        - { $ref: "#/components/parameters/CustomerId" }
+        - { $ref: "#/components/parameters/WorkflowId" }
+        - { $ref: "#/components/parameters/Cursor" }
+        - { $ref: "#/components/parameters/Limit" }
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending, running, succeeded, failed, aborted]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CursorPage_Run" }
+        default: { $ref: "#/components/responses/Problem" }
+    post:
+      operationId: startRun
+      tags: [runs]
+      summary: Start a workflow run
+      parameters:
+        - { $ref: "#/components/parameters/CustomerId" }
+        - { $ref: "#/components/parameters/WorkflowId" }
+        - { $ref: "#/components/parameters/IdempotencyKey" }
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/StartRunRequest" }
+      responses:
+        "202":
+          description: Accepted
+          headers:
+            Location:
+              schema: { type: string, format: uri }
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Run" }
+        default: { $ref: "#/components/responses/Problem" }
+
+  /runs/{runId}:
+    get:
+      operationId: getRun
+      tags: [runs]
+      parameters:
+        - { $ref: "#/components/parameters/RunId" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Run" }
+        default: { $ref: "#/components/responses/Problem" }
+
+  /runs/{runId}/abort:
+    post:
+      operationId: abortRun
+      tags: [runs]
+      parameters:
+        - { $ref: "#/components/parameters/RunId" }
+        - { $ref: "#/components/parameters/IdempotencyKey" }
+      responses:
+        "202":
+          description: Accepted
+        default: { $ref: "#/components/responses/Problem" }
+
+  /runs/{runId}/steps:
+    get:
+      operationId: listSteps
+      tags: [steps]
+      parameters:
+        - { $ref: "#/components/parameters/RunId" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Step" }
+        default: { $ref: "#/components/responses/Problem" }
+
+  /runs/{runId}/audit:
+    get:
+      operationId: getRunAudit
+      tags: [runs]
+      parameters:
+        - { $ref: "#/components/parameters/RunId" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/AuditEvent" }
+        default: { $ref: "#/components/responses/Problem" }
+
+  /runs/{runId}/cost:
+    get:
+      operationId: getRunCost
+      tags: [cost]
+      parameters:
+        - { $ref: "#/components/parameters/RunId" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CostMeter" }
+        default: { $ref: "#/components/responses/Problem" }
+
+  /runs/{runId}/bundle:
+    get:
+      operationId: getRunBundle
+      tags: [runs]
+      summary: Get a signed URL to the immutable run bundle in S3
+      parameters:
+        - { $ref: "#/components/parameters/RunId" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [url, expires_at]
+                properties:
+                  url: { type: string, format: uri }
+                  expires_at: { type: string, format: date-time }
+        default: { $ref: "#/components/responses/Problem" }
+
+  /escalations:
+    get:
+      operationId: listEscalations
+      tags: [escalations]
+      parameters:
+        - in: query
+          name: customerId
+          schema: { type: string }
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [open, acknowledged, resolved]
+        - { $ref: "#/components/parameters/Cursor" }
+        - { $ref: "#/components/parameters/Limit" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/CursorPage_Escalation" }
+        default: { $ref: "#/components/responses/Problem" }
+
+  /escalations/{escalationId}/resolve:
+    post:
+      operationId: resolveEscalation
+      tags: [escalations]
+      parameters:
+        - in: path
+          name: escalationId
+          required: true
+          schema: { type: string }
+        - { $ref: "#/components/parameters/IdempotencyKey" }
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/EscalationResolution" }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Escalation" }
+        default: { $ref: "#/components/responses/Problem" }
+
+  /policy-bundles:
+    get:
+      operationId: listPolicyBundles
+      tags: [policy-bundles]
+      parameters:
+        - in: query
+          name: customerId
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/PolicyBundle" }
+        default: { $ref: "#/components/responses/Problem" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    Cursor:
+      in: query
+      name: cursor
+      schema: { type: string }
+    Limit:
+      in: query
+      name: limit
+      schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+    CustomerId:
+      in: path
+      name: customerId
+      required: true
+      schema: { type: string }
+    WorkflowId:
+      in: path
+      name: workflowId
+      required: true
+      schema: { type: string }
+    RunId:
+      in: path
+      name: runId
+      required: true
+      schema: { type: string }
+    IdempotencyKey:
+      in: header
+      name: Idempotency-Key
+      schema: { type: string }
+
+  responses:
+    Problem:
+      description: An error response
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+
+  schemas:
+    Problem:
+      type: object
+      properties:
+        type: { type: string, format: uri }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string, format: uri }
+      required: [type, title, status]
+      example:
+        type: https://backofficepilot.ai/problems/run-not-found
+        title: Run not found
+        status: 404
+        detail: No run exists with id run_20260520_999.
+
+    Customer:
+      type: object
+      required: [customer_id, name, tier, vpc_environment, created_at]
+      properties:
+        customer_id: { type: string }
+        name: { type: string }
+        tier:
+          type: string
+          enum: [pilot, platform, enterprise]
+        vpc_environment:
+          type: string
+          enum: [prod, uat]
+        created_at: { type: string, format: date-time }
+
+    Workflow:
+      type: object
+      required: [workflow_id, customer_id, name, version]
+      properties:
+        workflow_id: { type: string }
+        customer_id: { type: string }
+        name: { type: string }
+        version: { type: string }
+        definition: { type: object, additionalProperties: true }
+        executor_requirements:
+          type: array
+          items: { type: string }
+        max_cost_per_run_usd: { type: number }
+        max_duration_minutes: { type: integer }
+
+    WorkflowDraft:
+      type: object
+      required: [name, definition]
+      properties:
+        name: { type: string }
+        definition: { type: object, additionalProperties: true }
+        executor_requirements:
+          type: array
+          items: { type: string }
+        max_cost_per_run_usd: { type: number, default: 1.0 }
+        max_duration_minutes: { type: integer, default: 15 }
+
+    Run:
+      type: object
+      required: [run_id, agent_id, status, started_at, total_cost_usd]
+      properties:
+        run_id: { type: string }
+        agent_id: { type: string }
+        status:
+          type: string
+          enum: [pending, running, succeeded, failed, aborted]
+        started_at: { type: string, format: date-time }
+        finished_at: { type: string, format: date-time, nullable: true }
+        total_cost_usd: { type: number }
+        trigger:
+          type: string
+          enum: [scheduled, manual, retry]
+        parent_run_id: { type: string, nullable: true }
+
+    StartRunRequest:
+      type: object
+      properties:
+        trigger:
+          type: string
+          enum: [manual, retry]
+          default: manual
+        input_overrides:
+          type: object
+          additionalProperties: true
+
+    Step:
+      type: object
+      required: [step_id, run_id, sequence, status]
+      properties:
+        step_id: { type: string }
+        run_id: { type: string }
+        sequence: { type: integer }
+        intent: { type: string }
+        system: { type: string }
+        status:
+          type: string
+          enum: [pending, success, failure, partial]
+        observations:
+          type: object
+          additionalProperties: true
+        actions_taken:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        duration_seconds: { type: integer }
+        executor:
+          type: string
+          enum: [novaact, agentcore_browser]
+        cost_usd_estimate: { type: number }
+        started_at: { type: string, format: date-time }
+        finished_at: { type: string, format: date-time, nullable: true }
+
+    AuditEvent:
+      type: object
+      required: [event_id, run_id, sequence, event_type, prev_hash, this_hash, timestamp]
+      properties:
+        event_id: { type: string }
+        run_id: { type: string }
+        sequence: { type: integer }
+        event_type: { type: string }
+        prev_hash: { type: string }
+        this_hash: { type: string }
+        payload:
+          type: object
+          additionalProperties: true
+        timestamp: { type: string, format: date-time }
+
+    CostMeter:
+      type: object
+      required: [run_id, total_usd]
+      properties:
+        run_id: { type: string }
+        opus_usd: { type: number }
+        novaact_usd: { type: number }
+        agentcore_browser_usd: { type: number }
+        runtime_usd: { type: number }
+        infra_usd: { type: number }
+        total_usd: { type: number }
+        by_step:
+          type: array
+          items:
+            type: object
+            properties:
+              step_id: { type: string }
+              total_usd: { type: number }
+
+    Escalation:
+      type: object
+      required: [escalation_id, exception_id, status, opened_at]
+      properties:
+        escalation_id: { type: string }
+        exception_id: { type: string }
+        channel:
+          type: string
+          enum: [slack, teams, email]
+        thread_ref: { type: string, nullable: true }
+        assigned_to: { type: string, nullable: true }
+        status:
+          type: string
+          enum: [open, acknowledged, resolved]
+        opened_at: { type: string, format: date-time }
+        resolved_at: { type: string, format: date-time, nullable: true }
+        sla_minutes_breached: { type: integer, nullable: true }
+
+    EscalationResolution:
+      type: object
+      required: [decision]
+      properties:
+        decision:
+          type: string
+          enum: [approve, reject, edit]
+        edited_payload:
+          type: object
+          additionalProperties: true
+        reviewer_note: { type: string }
+
+    PolicyBundle:
+      type: object
+      required: [bundle_id, customer_id, name, version, content_uri]
+      properties:
+        bundle_id: { type: string }
+        customer_id: { type: string }
+        name: { type: string }
+        version: { type: string }
+        content_uri: { type: string, format: uri }
+        created_at: { type: string, format: date-time }
+
+    CursorPage_Customer:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Customer" }
+        nextCursor: { type: string, nullable: true }
+
+    CursorPage_Workflow:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Workflow" }
+        nextCursor: { type: string, nullable: true }
+
+    CursorPage_Run:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Run" }
+        nextCursor: { type: string, nullable: true }
+
+    CursorPage_Escalation:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: "#/components/schemas/Escalation" }
+        nextCursor: { type: string, nullable: true }

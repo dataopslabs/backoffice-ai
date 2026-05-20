@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BackOfficePilot — Multi-Model AI Agents for the BFSI Back-Office</title>
+  <meta name="description" content="Multi-model AI agents for mid-market BFSI back-offices. Claude Opus reasons. Amazon Nova Act acts. Your team supervises." />
+  <meta property="og:title" content="BackOfficePilot — Multi-Model AI Agents for the BFSI Back-Office" />
+  <meta property="og:description" content="Claude Opus reasons. Amazon Nova Act acts. Your team supervises." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230B1F4D'/%3E%3Ccircle cx='20' cy='32' r='6' fill='%23F9C846'/%3E%3Ccircle cx='44' cy='32' r='6' fill='%230D9488'/%3E%3C/svg%3E" />
+  <style>
+    :root{
+      --navy:#0B1F4D; --navy-dark:#07153A; --ice:#CADCFC;
+      --gold:#F9C846; --teal:#0D9488; --coral:#F96167;
+      --muted:#8FA3C1; --text:#1E293B; --bg:#FFFFFF;
+      --surface:#F8FAFC; --border:#E5E7EB;
+      --font:-apple-system,BlinkMacSystemFont,"Segoe UI","Calibri",Roboto,Helvetica,Arial,sans-serif;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:var(--font);color:var(--text);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased}
+    a{color:var(--navy);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .container{max-width:1120px;margin:0 auto;padding:0 24px}
+    h1,h2,h3{margin:0;letter-spacing:-.01em}
+    h1{font-size:clamp(36px,5.2vw,64px);line-height:1.05;font-weight:800}
+    h2{font-size:clamp(26px,3.4vw,38px);line-height:1.15;font-weight:700;color:var(--navy)}
+    h3{font-size:20px;font-weight:700;color:var(--navy)}
+    p{margin:0 0 12px 0}
+    .muted{color:#475569}
+
+    /* Top nav */
+    .nav{position:sticky;top:0;background:rgba(11,31,77,.96);backdrop-filter:blur(8px);z-index:50;border-bottom:1px solid rgba(255,255,255,.08)}
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    .brand{display:flex;align-items:center;gap:10px;color:#fff;font-weight:700;letter-spacing:.01em}
+    .brand-mark{width:28px;height:28px;border-radius:6px;background:var(--navy-dark);display:inline-flex;align-items:center;justify-content:center}
+    .brand-mark::before,.brand-mark::after{content:"";width:8px;height:8px;border-radius:50%;display:inline-block}
+    .brand-mark::before{background:var(--gold);margin-right:3px}
+    .brand-mark::after{background:var(--teal)}
+    .nav-links{display:flex;gap:22px;align-items:center}
+    .nav-links a{color:var(--ice);font-size:14px}
+    .nav-links a:hover{color:#fff;text-decoration:none}
+    .btn{display:inline-block;padding:10px 18px;border-radius:8px;font-weight:600;font-size:14px;transition:transform .12s ease,box-shadow .12s ease;cursor:pointer;border:0}
+    .btn-primary{background:var(--gold);color:var(--navy);box-shadow:0 1px 0 rgba(0,0,0,.05)}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(249,200,70,.35);text-decoration:none}
+    .btn-ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.25)}
+    .btn-ghost:hover{background:rgba(255,255,255,.08);text-decoration:none}
+
+    /* Hero */
+    .hero{background:var(--navy);color:#fff;padding:96px 0 120px;position:relative;overflow:hidden}
+    .hero::before{content:"";position:absolute;top:48px;left:24px;width:240px;height:24px;background:
+      radial-gradient(circle 9px at 16px 12px, rgba(202,220,252,.65) 99%, transparent 100%) repeat-x;
+      background-size:40px 24px;opacity:.7;pointer-events:none}
+    .hero-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:48px;align-items:center}
+    @media (max-width:880px){.hero-grid{grid-template-columns:1fr}}
+    .eyebrow{display:inline-block;color:var(--gold);font-size:12px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:16px;font-weight:600}
+    .hero h1{color:#fff;margin-bottom:18px}
+    .hero p.lead{font-size:20px;color:var(--ice);max-width:640px}
+    .hero .accent-line{width:60px;height:3px;background:var(--gold);margin:28px 0}
+    .hero-italic{font-size:18px;color:var(--gold);font-style:italic;margin-bottom:32px}
+    .hero-ctas{display:flex;gap:14px;flex-wrap:wrap;margin-top:28px}
+    .hero-stats-card{background:var(--navy-dark);border:1px solid rgba(202,220,252,.15);border-radius:14px;padding:28px}
+    .hero-stats-card .stat{padding:14px 0;border-bottom:1px solid rgba(202,220,252,.08)}
+    .hero-stats-card .stat:last-child{border-bottom:0}
+    .hero-stats-card .num{font-size:30px;font-weight:800;color:#fff;letter-spacing:-.01em}
+    .hero-stats-card .label{color:var(--ice);font-size:13px;margin-top:2px}
+
+    /* Section base */
+    section{padding:80px 0}
+    section.alt{background:var(--surface)}
+    .section-head{max-width:780px;margin-bottom:48px}
+    .section-head .eyebrow{color:var(--teal)}
+
+    /* Problem strip */
+    .stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+    @media (max-width:880px){.stats-row{grid-template-columns:1fr}}
+    .stat-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:28px;position:relative;overflow:hidden}
+    .stat-card::before{content:"";position:absolute;top:0;left:0;width:4px;height:100%;background:var(--accent,var(--coral))}
+    .stat-card .num{font-size:42px;font-weight:800;color:var(--navy);letter-spacing:-.02em;line-height:1.05}
+    .stat-card .desc{margin-top:10px;color:var(--text);font-size:15px}
+    .stat-card.coral{--accent:var(--coral)}
+    .stat-card.teal{--accent:var(--teal)}
+    .stat-card.gold{--accent:var(--gold)}
+
+    /* How it works */
+    .how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+    @media (max-width:880px){.how-grid{grid-template-columns:1fr}}
+    .how-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:28px}
+    .how-card h3{margin-bottom:8px}
+    .how-card .sub{color:var(--teal);font-size:13px;text-transform:uppercase;letter-spacing:.12em;font-weight:600;margin-bottom:14px}
+    .how-card.featured{background:var(--navy);color:#fff;border-color:transparent}
+    .how-card.featured h3{color:#fff}
+    .how-card.featured .sub{color:var(--gold)}
+    .how-card.featured p{color:var(--ice)}
+
+    /* Day timeline */
+    .day-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+    @media (max-width:880px){.day-grid{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:560px){.day-grid{grid-template-columns:1fr}}
+    .day-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:18px;position:relative}
+    .day-card::before{content:"";position:absolute;top:0;left:0;width:100%;height:3px;background:var(--navy);border-radius:10px 10px 0 0}
+    .day-card .time{font-size:12px;font-weight:700;color:var(--teal);letter-spacing:.06em;margin-bottom:6px}
+    .day-card .step{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:8px}
+    .day-card .desc{font-size:13px;color:var(--text)}
+    .result-bar{margin-top:24px;background:var(--navy);color:#fff;padding:16px 22px;border-radius:10px;display:flex;flex-wrap:wrap;gap:8px 24px;align-items:center}
+    .result-bar .label{color:var(--gold);font-weight:700;letter-spacing:.1em;font-size:13px}
+    .result-bar .v{font-size:14px;color:var(--ice)}
+
+    /* Pillars */
+    .pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+    @media (max-width:880px){.pillars{grid-template-columns:1fr}}
+    .pillar{background:#fff;border:1px solid var(--border);border-radius:14px;padding:28px}
+    .pillar .icon{width:40px;height:40px;border-radius:10px;background:var(--ice);display:flex;align-items:center;justify-content:center;color:var(--navy);font-weight:700;margin-bottom:16px}
+
+    /* Calculator */
+    .calc-wrap{background:#fff;border:1px solid var(--border);border-radius:14px;padding:32px;display:grid;grid-template-columns:1.2fr 1fr;gap:32px;align-items:center}
+    @media (max-width:880px){.calc-wrap{grid-template-columns:1fr}}
+    .calc-form label{display:block;font-size:13px;font-weight:600;color:var(--text);margin-bottom:6px;margin-top:14px}
+    .calc-form label:first-child{margin-top:0}
+    .calc-form select,.calc-form input{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-size:15px;font-family:inherit;background:#fff;color:var(--text)}
+    .calc-form select:focus,.calc-form input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(13,148,136,.15)}
+    .calc-out{background:var(--navy);color:#fff;border-radius:12px;padding:28px;text-align:left}
+    .calc-out .label{font-size:12px;color:var(--gold);letter-spacing:.12em;text-transform:uppercase;font-weight:700}
+    .calc-out .big{font-size:38px;font-weight:800;color:#fff;letter-spacing:-.02em;margin:6px 0 18px;line-height:1.05}
+    .calc-out .sub{color:var(--ice);font-size:15px;margin-bottom:18px}
+    .calc-out .breakdown{font-size:13px;color:var(--ice);border-top:1px solid rgba(255,255,255,.12);padding-top:14px;line-height:1.7}
+    .calc-out .breakdown span{color:#fff;font-weight:600}
+
+    /* Security tiles */
+    .sec-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    @media (max-width:880px){.sec-grid{grid-template-columns:repeat(2,1fr)}}
+    @media (max-width:560px){.sec-grid{grid-template-columns:1fr}}
+    .sec-tile{background:#fff;border:1px solid var(--border);border-radius:12px;padding:20px;display:flex;gap:14px;align-items:flex-start}
+    .sec-tile .dot{width:10px;height:10px;border-radius:50%;background:var(--teal);margin-top:8px;flex-shrink:0}
+    .sec-tile .t{font-weight:700;color:var(--navy);font-size:15px}
+    .sec-tile .d{font-size:13px;color:var(--text);margin-top:2px}
+
+    /* Lead form */
+    .lead-section{background:var(--navy);color:#fff}
+    .lead-section h2{color:#fff}
+    .lead-section .muted{color:var(--ice)}
+    .lead-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:48px;align-items:start}
+    @media (max-width:880px){.lead-grid{grid-template-columns:1fr}}
+    .form{background:var(--navy-dark);border:1px solid rgba(202,220,252,.15);border-radius:14px;padding:28px}
+    .form label{display:block;font-size:13px;color:var(--ice);margin-bottom:6px;margin-top:14px;font-weight:600}
+    .form label:first-of-type{margin-top:0}
+    .form input,.form select,.form textarea{width:100%;padding:11px 12px;border:1px solid rgba(202,220,252,.22);border-radius:8px;font-size:15px;font-family:inherit;background:rgba(255,255,255,.04);color:#fff}
+    .form input::placeholder,.form textarea::placeholder{color:rgba(202,220,252,.55)}
+    .form input:focus,.form select:focus,.form textarea:focus{outline:none;border-color:var(--gold);background:rgba(255,255,255,.06)}
+    .form textarea{min-height:90px;resize:vertical}
+    .form .submit{margin-top:22px;width:100%}
+    .form-note{margin-top:12px;font-size:12px;color:var(--muted)}
+    #form-status{margin-top:14px;padding:10px 14px;border-radius:8px;font-size:14px;display:none}
+    #form-status.ok{display:block;background:rgba(13,148,136,.18);color:#5EEAD4;border:1px solid rgba(94,234,212,.3)}
+    #form-status.err{display:block;background:rgba(249,97,103,.16);color:#FCA5A5;border:1px solid rgba(252,165,165,.3)}
+
+    /* Footer */
+    footer{background:var(--navy-dark);color:var(--ice);padding:48px 0 24px}
+    footer .foot-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-bottom:32px}
+    @media (max-width:680px){footer .foot-grid{grid-template-columns:1fr}}
+    footer .small{font-size:13px;color:var(--muted)}
+    footer hr{border:0;border-top:1px solid rgba(202,220,252,.1);margin:0 0 18px 0}
+
+    /* Utilities */
+    .pill{display:inline-block;padding:4px 10px;border-radius:999px;background:rgba(202,220,252,.12);color:var(--ice);font-size:12px;letter-spacing:.05em;font-weight:600}
+    .reveal{opacity:0;transform:translateY(8px);transition:opacity .5s ease,transform .5s ease}
+    .reveal.in{opacity:1;transform:none}
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<header class="nav" role="banner">
+  <div class="container nav-inner">
+    <a class="brand" href="#" aria-label="BackOfficePilot home">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span>BackOfficePilot</span>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#how">How it works</a>
+      <a href="#day">A typical day</a>
+      <a href="#calc">Cost calculator</a>
+      <a href="#security">Security</a>
+      <a class="btn btn-primary" href="#contact">Book a call</a>
+    </nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero" role="region" aria-label="Introduction">
+  <div class="container hero-grid">
+    <div>
+      <span class="eyebrow">For mid-market BFSI back-offices</span>
+      <h1>Multi-Model AI Agents for the BFSI Back-Office</h1>
+      <div class="accent-line" aria-hidden="true"></div>
+      <p class="hero-italic">Claude Opus reasons. Amazon Nova Act acts. Your team supervises.</p>
+      <p class="lead">BackOfficePilot puts a reasoning model and a production-grade UI agent behind one orchestrator. The result: an unattended back-office worker for invoice reconciliation, KYC, loan ops, and regulatory filings — running on your existing ERPs, with audit-grade evidence by default.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="#contact">Book a 15-minute call</a>
+        <a class="btn btn-ghost" href="#how">See how it works</a>
+      </div>
+    </div>
+    <aside class="hero-stats-card" aria-label="At a glance">
+      <div class="stat">
+        <div class="num">~$0.55</div>
+        <div class="label">Cost per reconciliation run</div>
+      </div>
+      <div class="stat">
+        <div class="num">21×</div>
+        <div class="label">ROI vs. fully-loaded labor cost</div>
+      </div>
+      <div class="stat">
+        <div class="num">5–8 min</div>
+        <div class="label">End-to-end run time, unattended</div>
+      </div>
+      <div class="stat">
+        <div class="num">100%</div>
+        <div class="label">Tamper-evident audit trail</div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section id="problem" class="alt">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">The problem</span>
+      <h2>The mid-market BFSI back-office is bleeding money no one is fixing.</h2>
+      <p class="muted">RPA needs an in-house team to maintain. Big-4 transformations leave nothing behind. Copilots help humans type faster but never own the work. Mid-market banks and insurers fall through every crack.</p>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card coral">
+        <div class="num">20–40%</div>
+        <div class="desc">of operating payroll consumed by manual back-office workflows.</div>
+      </div>
+      <div class="stat-card teal">
+        <div class="num">$15–$60</div>
+        <div class="desc">per case for a single KYC review at a mid-sized bank.</div>
+      </div>
+      <div class="stat-card gold">
+        <div class="num">25–35%</div>
+        <div class="desc">annual attrition in BFSI operations — knowledge walks out the door.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW -->
+<section id="how">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">How it works</span>
+      <h2>Split the brain. One model thinks. One acts. An orchestrator keeps them honest.</h2>
+      <p class="muted">Reasoning is expensive, slow, and smart. Execution is cheap, fast, and dumb. Use the right model for each job — and audit every decision.</p>
+    </div>
+    <div class="how-grid">
+      <article class="how-card">
+        <div class="sub">The reasoner</div>
+        <h3>Claude Opus 4.6</h3>
+        <p>Reads policy, plans the workflow, classifies exceptions, writes audit narrative. Runs on Amazon Bedrock with prompt caching for ~$0.04 per decision.</p>
+      </article>
+      <article class="how-card featured">
+        <div class="sub">The orchestrator</div>
+        <h3>Plan → Execute → Reconcile → Commit</h3>
+        <p>A deterministic state machine. Enforces cost ceilings, JSON-schema validation, hash-chained audit logging, and human-in-the-loop escalation paths.</p>
+      </article>
+      <article class="how-card">
+        <div class="sub">The executor</div>
+        <h3>Amazon Nova Act</h3>
+        <p>Drives browser and desktop UIs on your existing ERPs, banking portals, and lending CRMs. AgentCore Browser as a fallback. $4.75 per agent-hour, production SLA.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- DAY -->
+<section id="day" class="alt">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">A typical day</span>
+      <h2>One agent. End-to-end. Unattended.</h2>
+      <p class="muted">Daily invoice reconciliation for a $5B-asset community bank. Replace with your workflow — the shape doesn’t change.</p>
+    </div>
+    <div class="day-grid">
+      <div class="day-card"><div class="time">07:00 AM</div><div class="step">Trigger</div><div class="desc">Cron fires. Opus reads the policy bundle (cached).</div></div>
+      <div class="day-card"><div class="time">+0:04</div><div class="step">Plan</div><div class="desc">Opus produces a 5-step plan with success criteria. JSON-schema validated.</div></div>
+      <div class="day-card"><div class="time">+0:30</div><div class="step">Execute</div><div class="desc">Nova Act logs in to bank + NetSuite, pulls 47 transactions and 89 invoices.</div></div>
+      <div class="day-card"><div class="time">+2:20</div><div class="step">Match</div><div class="desc">Three-way match. 41 clean, 6 exceptions. Posts journal entries.</div></div>
+      <div class="day-card"><div class="time">+5:45</div><div class="step">Audit + escalate</div><div class="desc">Run report PDF. 6 exceptions to Slack with one-click approvals.</div></div>
+    </div>
+    <div class="result-bar">
+      <span class="label">RESULT</span>
+      <span class="v">47 transactions reconciled in 5:45</span>
+      <span class="v">·</span>
+      <span class="v">$0.73 per run</span>
+      <span class="v">·</span>
+      <span class="v">vs. $11.67 in human labor</span>
+      <span class="v">·</span>
+      <span class="v">21× ROI</span>
+    </div>
+  </div>
+</section>
+
+<!-- PILLARS -->
+<section id="why">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Why mid-market BFSI</span>
+      <h2>Built for the customer everyone else leaves behind.</h2>
+      <p class="muted">Community banks, regional insurers, growth-stage fintechs with $1B–$50B in assets. Legacy ERPs. No in-house AI team. Real compliance pressure.</p>
+    </div>
+    <div class="pillars">
+      <div class="pillar">
+        <div class="icon" aria-hidden="true">①</div>
+        <h3>Regulated by default</h3>
+        <p>Every action is audit-logged with cryptographic chain integrity. The audit log is the product, not an afterthought.</p>
+      </div>
+      <div class="pillar">
+        <div class="icon" aria-hidden="true">②</div>
+        <h3>Works on legacy</h3>
+        <p>If a human can drive the system in a browser, our agent can. No API integration projects. No replacement of your ERP.</p>
+      </div>
+      <div class="pillar">
+        <div class="icon" aria-hidden="true">③</div>
+        <h3>Outcome-priced</h3>
+        <p>You pay a fixed pilot fee plus 25% of documented labor savings — not per seat, not per bot. We win when you win.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CALC -->
+<section id="calc" class="alt">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Cost calculator</span>
+      <h2>What would your team save?</h2>
+      <p class="muted">Rough back-of-envelope. We will share the detailed model after a discovery call.</p>
+    </div>
+    <div class="calc-wrap">
+      <div class="calc-form">
+        <label for="workflow">Workflow type</label>
+        <select id="workflow">
+          <option value="22">Invoice reconciliation (22 min/case)</option>
+          <option value="45">KYC review (45 min/case)</option>
+          <option value="35">Loan application processing (35 min/case)</option>
+          <option value="60">Regulatory filing (60 min/case)</option>
+        </select>
+
+        <label for="volume">Monthly volume (cases / month)</label>
+        <input id="volume" type="number" inputmode="numeric" value="800" min="1" />
+
+        <label for="rate">Fully-loaded hourly cost ($/hour)</label>
+        <input id="rate" type="number" inputmode="decimal" value="35" min="1" step="1" />
+      </div>
+      <div class="calc-out" aria-live="polite">
+        <div class="label">Estimated monthly savings</div>
+        <div class="big" id="calc-savings">$ —</div>
+        <div class="sub">Annual savings: <span id="calc-annual">—</span></div>
+        <div class="breakdown">
+          Labor cost today: <span id="calc-labor">—</span><br/>
+          BackOfficePilot estimate: <span id="calc-bop">—</span><br/>
+          Payback period: <span id="calc-payback">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECURITY -->
+<section id="security">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Security &amp; compliance</span>
+      <h2>Built for buyers who answer to regulators.</h2>
+    </div>
+    <div class="sec-grid">
+      <div class="sec-tile"><span class="dot"></span><div><div class="t">VPC isolation (Prod / UAT)</div><div class="d">Separate AWS accounts, no peering, no shared data path.</div></div></div>
+      <div class="sec-tile"><span class="dot"></span><div><div class="t">AES-256 at rest, customer CMK</div><div class="d">BYOK on enterprise tier. Default CMK otherwise.</div></div></div>
+      <div class="sec-tile"><span class="dot"></span><div><div class="t">TLS 1.3 in transit</div><div class="d">mTLS where supported. No plaintext service-to-service.</div></div></div>
+      <div class="sec-tile"><span class="dot"></span><div><div class="t">Tamper-evident audit log</div><div class="d">SHA-256 hash chain + S3 Object Lock compliance mode.</div></div></div>
+      <div class="sec-tile"><span class="dot"></span><div><div class="t">SOC 2 Type II — in progress</div><div class="d">Type II readiness targeted Q3 2027.</div></div></div>
+      <div class="sec-tile"><span class="dot"></span><div><div class="t">HIPAA-ready architecture</div><div class="d">Controls mapped; BAA-capable for healthcare workflows.</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- LEAD -->
+<section id="contact" class="lead-section">
+  <div class="container lead-grid">
+    <div>
+      <span class="eyebrow" style="color:var(--gold)">Talk to us</span>
+      <h2>Book a 15-minute call.</h2>
+      <p class="muted">Tell us what workflow is eating your team’s week. We’ll show you what BackOfficePilot would do, what it would cost, and what you would save.</p>
+      <p class="muted" style="margin-top:18px"><span class="pill">Pilot fee $25k</span> &nbsp; <span class="pill">25% of documented savings</span> &nbsp; <span class="pill">90-day proof of value</span></p>
+    </div>
+    <form class="form" id="lead-form" novalidate>
+      <label for="ln-name">Full name</label>
+      <input id="ln-name" name="name" placeholder="Jane Smith" required />
+
+      <label for="ln-email">Work email</label>
+      <input id="ln-email" name="email" type="email" placeholder="jane@yourcompany.com" required />
+
+      <label for="ln-company">Company</label>
+      <input id="ln-company" name="company" placeholder="Community Bank of Springfield" required />
+
+      <label for="ln-role">Role</label>
+      <select id="ln-role" name="role">
+        <option value="">Choose one…</option>
+        <option>CFO</option>
+        <option>COO</option>
+        <option>Head of Operations</option>
+        <option>BSA / Compliance Officer</option>
+        <option>Investor</option>
+        <option>Other</option>
+      </select>
+
+      <label for="ln-msg">What back-office workflow are you trying to fix?</label>
+      <textarea id="ln-msg" name="message" placeholder="Daily invoice reconciliation across NetSuite and our bank treasury portal…"></textarea>
+
+      <button class="btn btn-primary submit" type="submit">Send</button>
+      <div class="form-note">By submitting you agree to be contacted about BackOfficePilot. We don’t share your information. <a href="#" style="color:var(--ice)">Privacy</a>.</div>
+      <div id="form-status" role="status"></div>
+    </form>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="foot-grid">
+      <div>
+        <a class="brand" href="#" style="color:#fff"><span class="brand-mark" aria-hidden="true"></span><span>BackOfficePilot</span></a>
+        <p class="small" style="margin-top:14px;max-width:380px">Multi-model AI agents for the BFSI back-office. Built on AWS Bedrock AgentCore, Amazon Nova Act, and Claude Opus 4.6.</p>
+      </div>
+      <div class="small">
+        <div><strong style="color:#fff">Contact</strong></div>
+        <div>AJ · Founder</div>
+        <div><a href="mailto:hello@backofficepilot.ai" style="color:var(--ice)">hello@backofficepilot.ai</a></div>
+        <div style="margin-top:14px"><strong style="color:#fff">Built on</strong></div>
+        <div>AWS Bedrock · AgentCore Runtime · Gateway · Memory · Registry · Observability · Nova Act</div>
+      </div>
+    </div>
+    <hr />
+    <div class="small">© 2026 BackOfficePilot. All rights reserved. &nbsp; · &nbsp; <a href="#" style="color:var(--muted)">Privacy</a> &nbsp; · &nbsp; <a href="#" style="color:var(--muted)">Terms</a></div>
+  </div>
+</footer>
+
+<script>
+  // --- Calculator ---
+  const $ = (id) => document.getElementById(id);
+  function usd(n){ return n.toLocaleString('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}); }
+  function recalc(){
+    const minutes = parseFloat($('workflow').value) || 0;
+    const volume = parseFloat($('volume').value) || 0;
+    const rate = parseFloat($('rate').value) || 0;
+    // Labor cost
+    const laborMonth = (minutes/60) * volume * rate;
+    // BackOfficePilot estimate: $0.55 per case + 25% outcome fee on savings, plus $2,500 platform fee
+    const cost = 0.55 * volume;
+    const grossSavings = Math.max(laborMonth - cost, 0);
+    const outcomeFee = 0.25 * grossSavings;
+    const platformFee = 2500;
+    const bopMonth = cost + outcomeFee + platformFee;
+    const netSavings = laborMonth - bopMonth;
+    const annual = netSavings * 12;
+    // Payback in months: pilot fee 25k / monthly savings
+    const payback = netSavings > 0 ? (25000 / netSavings) : null;
+
+    $('calc-savings').textContent = usd(Math.max(netSavings,0));
+    $('calc-annual').textContent  = usd(Math.max(annual,0));
+    $('calc-labor').textContent   = usd(laborMonth) + ' / month';
+    $('calc-bop').textContent     = usd(bopMonth) + ' / month (incl. platform fee + outcome share)';
+    $('calc-payback').textContent = payback ? (payback < 1 ? '< 1 month' : payback.toFixed(1) + ' months') : '—';
+  }
+  ['workflow','volume','rate'].forEach(id => $(id).addEventListener('input', recalc));
+  recalc();
+
+  // --- Form submit ---
+  const form = $('lead-form');
+  const status = $('form-status');
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    status.className = ''; status.textContent = '';
+    const data = Object.fromEntries(new FormData(form));
+    if (!data.name || !data.email || !data.company) {
+      status.className = 'err'; status.textContent = 'Please fill in name, email, and company.'; return;
+    }
+    const webhook = window.LANDING_LEAD_WEBHOOK; // optional; set via inline config
+    if (webhook) {
+      try {
+        const r = await fetch(webhook, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+        if (!r.ok) throw new Error('Bad response');
+        status.className = 'ok'; status.textContent = 'Thanks — we’ll be in touch within one business day.';
+        form.reset();
+      } catch(err) {
+        status.className = 'err'; status.textContent = 'Submission failed. Email us at hello@backofficepilot.ai.';
+      }
+    } else {
+      // Fallback: open mailto with prefilled body
+      const body = encodeURIComponent(`Name: ${data.name}\nEmail: ${data.email}\nCompany: ${data.company}\nRole: ${data.role || ''}\n\n${data.message || ''}`);
+      window.location.href = `mailto:hello@backofficepilot.ai?subject=BackOfficePilot%20inquiry&body=${body}`;
+      status.className = 'ok'; status.textContent = 'Opening your email — if nothing happens, email hello@backofficepilot.ai directly.';
+    }
+  });
+
+  // --- Reveal-on-scroll ---
+  document.querySelectorAll('section').forEach(s => s.classList.add('reveal'));
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { rootMargin: '0px 0px -60px 0px', threshold: 0.05 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+
+</body>
+</html>
