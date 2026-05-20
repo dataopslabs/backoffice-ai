@@ -1,0 +1,682 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>What BackOfficePilot solves — Mid-market BFSI back-office</title>
+  <meta name="description" content="A deep look at the mid-market BFSI back-office: where the cost hides, why every prior automation wave missed this customer, and how BackOfficePilot solves it." />
+  <meta property="og:title" content="What BackOfficePilot solves" />
+  <meta property="og:description" content="The mid-market BFSI back-office runs on humans copying numbers between systems that don't talk to each other. Here is why prior automation missed this customer — and what we do differently." />
+  <meta property="og:type" content="article" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230B1F4D'/%3E%3Ccircle cx='20' cy='32' r='6' fill='%23F9C846'/%3E%3Ccircle cx='44' cy='32' r='6' fill='%230D9488'/%3E%3C/svg%3E" />
+  <style>
+    :root{
+      --navy:#0B1F4D; --navy-dark:#07153A; --ice:#CADCFC;
+      --gold:#F9C846; --teal:#0D9488; --coral:#F96167;
+      --muted:#8FA3C1; --text:#1E293B; --text-soft:#475569;
+      --bg:#FFFFFF; --surface:#F8FAFC; --border:#E5E7EB;
+      --font:-apple-system,BlinkMacSystemFont,"Segoe UI","Calibri",Roboto,Helvetica,Arial,sans-serif;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:var(--font);color:var(--text);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased}
+    a{color:var(--navy);text-decoration:none}
+    a:hover{text-decoration:underline}
+    .container{max-width:1080px;margin:0 auto;padding:0 24px}
+    .container-narrow{max-width:780px;margin:0 auto;padding:0 24px}
+    h1,h2,h3,h4{margin:0;letter-spacing:-.01em}
+    h1{font-size:clamp(34px,4.6vw,52px);line-height:1.08;font-weight:800}
+    h2{font-size:clamp(24px,3vw,34px);line-height:1.2;font-weight:700;color:var(--navy);margin-bottom:14px}
+    h3{font-size:20px;font-weight:700;color:var(--navy);margin-bottom:8px}
+    h4{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:6px}
+    p{margin:0 0 14px 0;color:var(--text)}
+    p.lead{font-size:19px;color:var(--text-soft)}
+    .muted{color:var(--text-soft)}
+    ul,ol{padding-left:22px;margin:0 0 14px 0}
+    li{margin-bottom:8px}
+
+    /* NAV (same shell as landing) */
+    .nav{position:sticky;top:0;background:rgba(11,31,77,.96);backdrop-filter:blur(8px);z-index:50;border-bottom:1px solid rgba(255,255,255,.08)}
+    .nav-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    .brand{display:flex;align-items:center;gap:10px;color:#fff;font-weight:700;letter-spacing:.01em}
+    .brand-mark{width:28px;height:28px;border-radius:6px;background:var(--navy-dark);display:inline-flex;align-items:center;justify-content:center}
+    .brand-mark::before,.brand-mark::after{content:"";width:8px;height:8px;border-radius:50%;display:inline-block}
+    .brand-mark::before{background:var(--gold);margin-right:3px}
+    .brand-mark::after{background:var(--teal)}
+    .nav-links{display:flex;gap:22px;align-items:center}
+    .nav-links a{color:var(--ice);font-size:14px}
+    .nav-links a.active{color:#fff}
+    .nav-links a:hover{color:#fff;text-decoration:none}
+    .btn{display:inline-block;padding:10px 18px;border-radius:8px;font-weight:600;font-size:14px;transition:transform .12s ease,box-shadow .12s ease;cursor:pointer;border:0}
+    .btn-primary{background:var(--gold);color:var(--navy);box-shadow:0 1px 0 rgba(0,0,0,.05)}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(249,200,70,.35);text-decoration:none}
+    .btn-ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.25)}
+    .btn-ghost:hover{background:rgba(255,255,255,.08);text-decoration:none}
+    .btn-secondary{background:#fff;color:var(--navy);border:1px solid var(--border)}
+    .btn-secondary:hover{background:var(--surface);text-decoration:none}
+
+    /* PAGE HEAD */
+    .page-head{background:var(--navy);color:#fff;padding:72px 0 88px;position:relative;overflow:hidden}
+    .page-head::before{content:"";position:absolute;top:36px;left:24px;width:240px;height:24px;
+      background:radial-gradient(circle 9px at 16px 12px, rgba(202,220,252,.6) 99%, transparent 100%) repeat-x;
+      background-size:40px 24px;opacity:.7;pointer-events:none}
+    .page-head h1{color:#fff;margin-bottom:18px;max-width:780px}
+    .page-head .accent-line{width:60px;height:3px;background:var(--gold);margin:24px 0}
+    .page-head .eyebrow{display:inline-block;color:var(--gold);font-size:12px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:14px;font-weight:600}
+    .page-head p.lead{font-size:20px;color:var(--ice);max-width:760px;margin-bottom:24px}
+
+    /* TOC */
+    .toc{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:36px;max-width:980px}
+    @media (max-width:900px){.toc{grid-template-columns:repeat(2,1fr)}}
+    .toc a{background:rgba(202,220,252,.08);border:1px solid rgba(202,220,252,.18);border-radius:8px;padding:12px 14px;color:var(--ice);font-size:13px;line-height:1.35;transition:background .15s ease}
+    .toc a:hover{background:rgba(202,220,252,.14);text-decoration:none;color:#fff}
+    .toc a .n{display:inline-block;color:var(--gold);font-weight:700;margin-right:8px}
+
+    /* SECTIONS */
+    section{padding:64px 0}
+    section.alt{background:var(--surface)}
+    .section-head{margin-bottom:32px;max-width:760px}
+    .section-head .eyebrow{display:inline-block;color:var(--teal);font-size:12px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:10px;font-weight:600}
+
+    /* QUOTE / pull */
+    .pull{border-left:4px solid var(--gold);padding:14px 22px;background:#fff;border-radius:0 10px 10px 0;margin:24px 0;color:var(--text);font-size:17px;font-style:italic;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+
+    /* SCENARIO CARDS */
+    .scenario-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:24px}
+    @media (max-width:900px){.scenario-grid{grid-template-columns:1fr}}
+    .scenario{background:#fff;border:1px solid var(--border);border-radius:12px;padding:24px}
+    .scenario .role{font-size:12px;color:var(--teal);font-weight:700;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px}
+    .scenario h3{margin-bottom:10px}
+    .scenario .meta{display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+    .scenario .meta span{font-size:13px;color:var(--text-soft)}
+    .scenario .meta span b{color:var(--navy);font-weight:700;display:block;font-size:15px}
+
+    /* WORKFLOW PAIN TABLE */
+    .pain-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+    @media (max-width:900px){.pain-grid{grid-template-columns:1fr}}
+    .pain-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:22px;position:relative;overflow:hidden}
+    .pain-card::before{content:"";position:absolute;top:0;left:0;width:4px;height:100%;background:var(--coral)}
+    .pain-card h3{margin-bottom:6px}
+    .pain-card .one-liner{color:var(--text-soft);font-size:14px;margin-bottom:14px}
+    .pain-card .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px;background:var(--surface);border-radius:8px;margin-bottom:12px}
+    .pain-card .stats .stat{text-align:center}
+    .pain-card .stats .stat .v{font-size:18px;font-weight:800;color:var(--navy);line-height:1.1;letter-spacing:-.01em}
+    .pain-card .stats .stat .l{font-size:11px;color:var(--text-soft);margin-top:2px;text-transform:uppercase;letter-spacing:.04em}
+    .pain-card .hurts{font-size:13px;color:var(--text);margin-top:6px}
+    .pain-card .hurts b{color:var(--navy)}
+
+    /* COMPARISON TABLE */
+    .table-wrap{background:#fff;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+    table.compare{width:100%;border-collapse:collapse}
+    table.compare th,table.compare td{padding:14px 18px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top;font-size:14px}
+    table.compare thead th{background:var(--navy);color:#fff;font-weight:700;font-size:13px;letter-spacing:.04em}
+    table.compare tbody tr:last-child td{border-bottom:0}
+    table.compare td.label{font-weight:700;color:var(--navy);background:var(--surface);width:30%}
+    @media (max-width:760px){
+      table.compare th,table.compare td{padding:10px 12px;font-size:13px}
+      table.compare td.label{width:38%}
+    }
+
+    /* DAMAGE LIST */
+    .damage{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:20px}
+    @media (max-width:900px){.damage{grid-template-columns:1fr}}
+    .damage-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:22px;border-left:4px solid var(--navy)}
+    .damage-card h4{color:var(--navy);margin-bottom:6px}
+    .damage-card p{margin:0;font-size:14px;color:var(--text-soft)}
+
+    /* SOLUTION GRID */
+    .sol-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;margin-top:24px}
+    @media (max-width:900px){.sol-grid{grid-template-columns:1fr}}
+    .sol-card{background:#fff;border:1px solid var(--border);border-radius:14px;padding:28px;position:relative}
+    .sol-card .num{display:inline-block;font-size:14px;font-weight:800;color:var(--gold);background:var(--navy);padding:6px 12px;border-radius:6px;letter-spacing:.04em;margin-bottom:14px}
+    .sol-card.feat{background:var(--navy);color:#fff;border-color:transparent}
+    .sol-card.feat h3{color:#fff}
+    .sol-card.feat p{color:var(--ice)}
+    .sol-card.feat .num{background:var(--gold);color:var(--navy)}
+
+    /* BEFORE/AFTER */
+    .ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:24px}
+    @media (max-width:900px){.ba-grid{grid-template-columns:1fr}}
+    .ba-col{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden}
+    .ba-head{padding:14px 22px;color:#fff;font-weight:700;letter-spacing:.06em;font-size:13px;text-transform:uppercase}
+    .ba-head.before{background:#94A3B8}
+    .ba-head.after{background:var(--teal)}
+    .ba-col ul{padding:20px 24px 22px 38px;margin:0}
+    .ba-col li{font-size:14px;color:var(--text);margin-bottom:10px}
+
+    /* ROI TABLE */
+    .roi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:24px}
+    @media (max-width:900px){.roi-grid{grid-template-columns:1fr}}
+    .roi-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:22px}
+    .roi-card .name{font-weight:700;color:var(--navy);margin-bottom:6px}
+    .roi-card .row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--border);font-size:14px}
+    .roi-card .row:last-child{border-bottom:0;font-weight:700;color:var(--navy)}
+    .roi-card .row .l{color:var(--text-soft)}
+    .roi-card .row .v{color:var(--text)}
+    .roi-card .row.highlight{color:var(--navy);font-weight:800;padding-top:12px;border-top:2px solid var(--navy);margin-top:6px}
+    .roi-card .row.highlight .v{color:var(--teal);font-size:18px}
+
+    /* INDUSTRY */
+    .ind-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;margin-top:24px}
+    @media (max-width:900px){.ind-grid{grid-template-columns:1fr}}
+    .ind-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:22px}
+    .ind-card .tag{display:inline-block;font-size:11px;letter-spacing:.1em;color:var(--teal);font-weight:700;text-transform:uppercase;margin-bottom:8px}
+    .ind-card h3{margin-bottom:8px}
+    .ind-card ul{padding-left:18px}
+    .ind-card li{font-size:14px;margin-bottom:6px}
+
+    /* CTA */
+    .cta-section{background:var(--navy);color:#fff;padding:80px 0}
+    .cta-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+    @media (max-width:900px){.cta-grid{grid-template-columns:1fr}}
+    .cta-section h2{color:#fff}
+    .cta-section p{color:var(--ice)}
+    .cta-actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:24px}
+
+    /* FOOTER */
+    footer{background:var(--navy-dark);color:var(--ice);padding:40px 0 24px}
+    footer .small{font-size:13px;color:var(--muted)}
+    footer .small a{color:var(--muted)}
+
+    /* utility */
+    .anchor{display:block;position:relative;top:-72px;visibility:hidden;height:0}
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<header class="nav" role="banner">
+  <div class="container nav-inner">
+    <a class="brand" href="landing.html" aria-label="BackOfficePilot home">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span>BackOfficePilot</span>
+    </a>
+    <nav class="nav-links" aria-label="Primary">
+      <a class="active" href="what_it_solves.html">What we solve</a>
+      <a href="landing.html#how">How it works</a>
+      <a href="landing.html#calc">Cost calculator</a>
+      <a href="landing.html#security">Security</a>
+      <a class="btn btn-primary" href="landing.html#contact">Book a call</a>
+    </nav>
+  </div>
+</header>
+
+<!-- PAGE HEAD -->
+<section class="page-head">
+  <div class="container">
+    <span class="eyebrow">A deep look at the problem</span>
+    <h1>What BackOfficePilot solves</h1>
+    <div class="accent-line" aria-hidden="true"></div>
+    <p class="lead">The mid-market BFSI back-office runs on humans copying numbers between systems that don’t talk to each other. Here is why every prior automation wave missed this customer — and what we do differently.</p>
+
+    <div class="toc" aria-label="Table of contents">
+      <a href="#status-quo"><span class="n">01</span>The status quo</a>
+      <a href="#anatomy"><span class="n">02</span>Anatomy of the pain</a>
+      <a href="#prior-waves"><span class="n">03</span>Why prior automation missed</a>
+      <a href="#compounding"><span class="n">04</span>The compounding damage</a>
+      <a href="#how-we-solve"><span class="n">05</span>How we solve it</a>
+      <a href="#before-after"><span class="n">06</span>Operating-model change</a>
+      <a href="#roi"><span class="n">07</span>Per-workflow ROI</a>
+      <a href="#industries"><span class="n">08</span>By industry</a>
+    </div>
+  </div>
+</section>
+
+<!-- 01 STATUS QUO -->
+<section id="status-quo" class="alt">
+  <a class="anchor" id="status-quo-a"></a>
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">01 · The status quo</span>
+      <h2>A day inside a $5B-asset community bank.</h2>
+      <p class="lead">Walk the operations floor of any mid-market bank, regional insurer, or fund-accounting team and the picture is the same. Capable, expensive humans are spending their day copying numbers between systems that were never designed to talk to each other.</p>
+    </div>
+
+    <p>Three roles, three workflows, three buckets of waste. These are composite portraits drawn from customer interviews; the dollar figures are conservative midpoints of the ranges we see.</p>
+
+    <div class="scenario-grid">
+      <div class="scenario">
+        <div class="role">Loan operations clerk</div>
+        <h3>From PDF to CRM, by hand</h3>
+        <p class="muted">Pulls a PDF loan application from email. Types ~120 fields into the lending CRM. Opens a credit-bureau portal in another tab. Screenshots the report and attaches it to a SharePoint folder. Emails the underwriter.</p>
+        <div class="meta">
+          <span><b>~35 min</b>per application</span>
+          <span><b>3–6%</b>error rate</span>
+          <span><b>~$20</b>fully-loaded labor cost</span>
+        </div>
+      </div>
+      <div class="scenario">
+        <div class="role">Reconciliation analyst</div>
+        <h3>The morning Excel grind</h3>
+        <p class="muted">Exports yesterday’s bank statement to Excel. Exports the general ledger to another Excel. Runs VLOOKUPs to find breaks. Investigates each break by hand. Posts journal entries one at a time.</p>
+        <div class="meta">
+          <span><b>2–4 hrs</b>per morning</span>
+          <span><b>10–15%</b>of finance team time</span>
+          <span><b>2–3 days</b>added to close cycle</span>
+        </div>
+      </div>
+      <div class="scenario">
+        <div class="role">KYC reviewer</div>
+        <h3>Three web tools, one memo</h3>
+        <p class="muted">Opens a new customer’s onboarding packet. Screens them against OFAC and adverse-media sources in three separate web tools. Writes a memo summarizing what they found. Routes to BSA officer for approval.</p>
+        <div class="meta">
+          <span><b>30–60 min</b>per case</span>
+          <span><b>$15–$60</b>per review</span>
+          <span><b>2–4 days</b>onboarding wait</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="pull">Each of these workflows takes between fifteen minutes and four hours per case. Each is rule-bound enough that a competent new hire learns it in days. None has been automated — not because automation isn’t possible, but because nobody is selling automation that fits this customer.</div>
+  </div>
+</section>
+
+<!-- 02 ANATOMY -->
+<section id="anatomy">
+  <a class="anchor" id="anatomy-a"></a>
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">02 · Anatomy of the pain</span>
+      <h2>Five workflows, the same broken pattern.</h2>
+      <p class="lead">We see the same five workflow families across mid-market banks, insurers, asset managers, and fintechs. They differ in detail; they share a structural cost profile.</p>
+    </div>
+
+    <div class="pain-grid">
+      <div class="pain-card">
+        <h3>Invoice reconciliation (3-way match)</h3>
+        <p class="one-liner">Match invoices to POs and payments across the ERP and the bank.</p>
+        <div class="stats">
+          <div class="stat"><div class="v">10–20 hrs</div><div class="l">per week</div></div>
+          <div class="stat"><div class="v">~$11–$15</div><div class="l">per case (labor)</div></div>
+          <div class="stat"><div class="v">2–3 days</div><div class="l">close delay</div></div>
+        </div>
+        <p class="hurts"><b>What hurts:</b> fuzzy timing, vendor-name variants ("Acme Industries" vs "ACME Inds."), penny-rounding tolerance disputes. Errors here delay month-end close and surface in audit findings.</p>
+      </div>
+
+      <div class="pain-card">
+        <h3>KYC / sanctions screening</h3>
+        <p class="one-liner">Verify identity, screen against sanctions lists, write a defensible memo for the BSA officer.</p>
+        <div class="stats">
+          <div class="stat"><div class="v">30–60 min</div><div class="l">per case</div></div>
+          <div class="stat"><div class="v">$15–$60</div><div class="l">per review</div></div>
+          <div class="stat"><div class="v">2–4 days</div><div class="l">onboarding wait</div></div>
+        </div>
+        <p class="hurts"><b>What hurts:</b> regulators expect documentary evidence for every decision; reviewers under time pressure write thin memos; one bad call invites a consent order.</p>
+      </div>
+
+      <div class="pain-card">
+        <h3>Loan application processing</h3>
+        <p class="one-liner">Extract PDF data, validate against underwriting policy, populate the lending CRM, route for approval.</p>
+        <div class="stats">
+          <div class="stat"><div class="v">~35 min</div><div class="l">per app (clerical only)</div></div>
+          <div class="stat"><div class="v">3–6%</div><div class="l">data-entry error rate</div></div>
+          <div class="stat"><div class="v">~120</div><div class="l">fields per app</div></div>
+        </div>
+        <p class="hurts"><b>What hurts:</b> errors here cause denied loans, denied claims, and audit write-ups; rework is expensive; volume drives headcount linearly.</p>
+      </div>
+
+      <div class="pain-card">
+        <h3>Account / cash reconciliation</h3>
+        <p class="one-liner">Daily ledger-vs-bank-statement matching; investigate breaks; propose adjusting entries.</p>
+        <div class="stats">
+          <div class="stat"><div class="v">2–4 hrs</div><div class="l">each morning</div></div>
+          <div class="stat"><div class="v">10–15%</div><div class="l">of finance time</div></div>
+          <div class="stat"><div class="v">Daily</div><div class="l">frequency</div></div>
+        </div>
+        <p class="hurts"><b>What hurts:</b> the same problem every day; close cycles slip; senior staff burn out on a junior workflow.</p>
+      </div>
+
+      <div class="pain-card">
+        <h3>Regulatory filing prep (Call Reports, MCR)</h3>
+        <p class="one-liner">Pull GL data into schedule-specific templates, reconcile prior-period adjustments, draft narrative.</p>
+        <div class="stats">
+          <div class="stat"><div class="v">~80 hrs</div><div class="l">quarterly scramble</div></div>
+          <div class="stat"><div class="v">1 FTE × 2 wks</div><div class="l">at peak</div></div>
+          <div class="stat"><div class="v">Quarterly</div><div class="l">frequency</div></div>
+        </div>
+        <p class="hurts"><b>What hurts:</b> compressed timelines, late nights, errors that draw regulator attention; the same people firefight every quarter.</p>
+      </div>
+
+      <div class="pain-card" style="border-left-color:var(--gold)">
+        <h3 style="color:#7A5A0A">The shared signature</h3>
+        <p class="one-liner">All five share the same three structural traits.</p>
+        <div class="stats">
+          <div class="stat"><div class="v">No APIs</div><div class="l">on the source systems</div></div>
+          <div class="stat"><div class="v">Rule-bound</div><div class="l">but not code</div></div>
+          <div class="stat"><div class="v">High volume</div><div class="l">low per-case value</div></div>
+        </div>
+        <p class="hurts"><b>That signature is why prior automation missed them — and why agentic AI in 2026 is the first technology that can finally fit.</b></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 PRIOR WAVES -->
+<section id="prior-waves" class="alt">
+  <a class="anchor" id="prior-waves-a"></a>
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">03 · Why prior automation missed this customer</span>
+      <h2>Four categories of incumbent. None of them fit.</h2>
+      <p class="lead">Every wave of back-office automation since 2010 has been pitched to mid-market BFSI buyers. Every wave has bounced off the same constraints.</p>
+    </div>
+
+    <div class="table-wrap">
+      <table class="compare" aria-label="Comparison of prior automation categories">
+        <thead>
+          <tr>
+            <th>Category</th>
+            <th>What they offer</th>
+            <th>Why it fails the mid-market BFSI buyer</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="label">Big-4 / strategy consultants</td>
+            <td>Bespoke transformation projects. Custom code. Change management.</td>
+            <td>$2M+ engagements; 18-month timelines; nothing automated left behind when they leave. Not viable below a $50B asset base.</td>
+          </tr>
+          <tr>
+            <td class="label">Enterprise RPA<br/><span class="muted" style="font-weight:400;font-size:13px">UiPath, Blue Prism, Automation Anywhere</span></td>
+            <td>Bot designers, orchestrators, agentic AI add-ons. Per-bot licensing.</td>
+            <td>Brittle screen-scraping breaks when a button moves. Per-bot licensing penalizes the customer for scaling. Requires an in-house RPA team to maintain — exactly the team mid-market firms don’t have.</td>
+          </tr>
+          <tr>
+            <td class="label">Copilots / SaaS AI<br/><span class="muted" style="font-weight:400;font-size:13px">In-app chat, document summarizers</span></td>
+            <td>Help a human review a document or summarize an email faster.</td>
+            <td>The human is still doing the work, just typing faster. The agent doesn’t own the workflow. Doesn’t run unattended. Doesn’t cross systems. Doesn’t produce audit evidence.</td>
+          </tr>
+          <tr>
+            <td class="label">Generalist agent startups<br/><span class="muted" style="font-weight:400;font-size:13px">"Auto-GPT for everything"</span></td>
+            <td>One foundation model wrapped in a workflow runner.</td>
+            <td>Either hallucinate on compliance reasoning, or burn $20 of frontier-model tokens to fill one form. No vertical depth. No defensible audit trail. Demos beautifully; fails the first regulator question.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p style="margin-top:24px">The gap is real. Mid-market BFSI is too small for Big-4, too operationally lean for RPA, too regulated for SaaS copilots, and too high-stakes for generalist agents. The result is a customer base that has been pitched twenty automation stories and bought none of them — because none of them solved the problem they actually have.</p>
+  </div>
+</section>
+
+<!-- 04 COMPOUNDING -->
+<section id="compounding">
+  <a class="anchor" id="compounding-a"></a>
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">04 · The compounding damage</span>
+      <h2>What inaction costs.</h2>
+      <p class="lead">A mid-market bank that keeps its back-office as-is doesn’t stand still. The status quo gets worse every quarter as four pressures compound.</p>
+    </div>
+
+    <div class="damage">
+      <div class="damage-card">
+        <h4>Headcount scales linearly with volume</h4>
+        <p>Loan volume up 20% means loan-ops headcount up 20%. Insurance premium growth means more reviewers. The fastest-growing line items on the mid-market BFSI P&amp;L are operations salaries — and the CFO cannot solve them by training the existing team harder.</p>
+      </div>
+      <div class="damage-card">
+        <h4>Compliance debt accrues quietly</h4>
+        <p>Manual KYC reviews produce thin memos. Reconciliation breaks go undocumented because nobody has time. When the regulator’s next exam asks for evidence, the bank scrambles. Consent orders and MRA findings move from "concerning" to "material" — eroding valuation.</p>
+      </div>
+      <div class="damage-card">
+        <h4>Institutional knowledge walks out</h4>
+        <p>Annual attrition in BFSI operations is 25–35%. Senior reviewers leave with the policy interpretations they carry in their heads. The replacement ramps for six months. During those six months, error rates rise and audit findings increase.</p>
+      </div>
+      <div class="damage-card">
+        <h4>The next downturn is louder</h4>
+        <p>When a stress event hits — a regional banking crisis, an insurance loss spike, a regulator’s sudden focus — the firms with manual back-offices are the ones that miss filing deadlines, mis-process claims, and end up on the front page. The status-quo cost shows up as headline risk, not just labor cost.</p>
+      </div>
+    </div>
+
+    <div class="pull">Mid-market BFSI firms emerged from the 2023–24 banking stress cycle with three new pressures: tighter regulatory examinations, eroding net interest margin, and ageing back-office staff retiring without succession. The buyer who would not return our call in 2023 now has a board-level mandate to reduce back-office cost-to-serve by 20% without weakening compliance.</div>
+  </div>
+</section>
+
+<!-- 05 HOW WE SOLVE -->
+<section id="how-we-solve" class="alt">
+  <a class="anchor" id="how-we-solve-a"></a>
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">05 · How BackOfficePilot solves it</span>
+      <h2>An unattended back-office worker, designed for regulated buyers.</h2>
+      <p class="lead">BackOfficePilot is a multi-model agentic automation platform built for the mid-market BFSI back-office. We pair Anthropic’s Claude Opus 4.6 — the strongest available reasoning model — with Amazon Nova Act, the production-grade UI execution agent. A deterministic orchestrator keeps them honest and produces audit-grade evidence by default.</p>
+    </div>
+
+    <div class="sol-grid">
+      <div class="sol-card feat">
+        <span class="num">01</span>
+        <h3>Two brains, by design</h3>
+        <p>Claude Opus reasons over policy, classifies exceptions, and writes audit narrative — at about $0.04 per decision. Amazon Nova Act drives the actual clicks, keystrokes, and form-fills on your existing systems at $4.75 per agent-hour. We use the right model for each job; the cost and reliability advantages compound.</p>
+      </div>
+      <div class="sol-card">
+        <span class="num">02</span>
+        <h3>A deterministic orchestrator</h3>
+        <p>Plan → Execute → Reconcile → Commit. A state machine mediates every handoff with schema-validated payloads, per-run cost ceilings, retry logic, and human-in-the-loop escalation. The Reasoner and Executor are probabilistic. The orchestrator is not.</p>
+      </div>
+      <div class="sol-card">
+        <span class="num">03</span>
+        <h3>Audit log as the product</h3>
+        <p>Every action by every agent is recorded with a SHA-256 hash chain and stored in S3 Object Lock compliance mode. Your auditor can verify chain integrity without our software. This is better evidence than the human process it replaces — by a wide margin.</p>
+      </div>
+      <div class="sol-card">
+        <span class="num">04</span>
+        <h3>Drives existing UIs</h3>
+        <p>If a human can drive your ERP, banking portal, or lending CRM in a browser, our agent can. No API integration project. No replacement of your core systems. We meet your stack where it is.</p>
+      </div>
+      <div class="sol-card">
+        <span class="num">05</span>
+        <h3>Outcome-priced</h3>
+        <p>A fixed $25k pilot fee plus 25% of documented labor savings. Not per seat. Not per bot. We win when you win. This is the pricing model regulated buyers actually respond to.</p>
+      </div>
+      <div class="sol-card">
+        <span class="num">06</span>
+        <h3>Leave-behind</h3>
+        <p>The agent runs in your AWS account (or our managed cloud, your choice), with your secrets and your KMS key. When the pilot ends, the agent stays. You are not renting access; you are operating an asset.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 06 BEFORE / AFTER -->
+<section id="before-after">
+  <a class="anchor" id="before-after-a"></a>
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">06 · Operating-model change</span>
+      <h2>From queue-runners to exception specialists.</h2>
+      <p class="lead">Twelve months after deploying BackOfficePilot on its top three back-office workflows, the customer’s operating model has changed in five specific ways.</p>
+    </div>
+
+    <div class="ba-grid">
+      <div class="ba-col">
+        <div class="ba-head before">Before — Status-quo back-office</div>
+        <ul>
+          <li>40–60 FTE queue-runners doing the same task all day.</li>
+          <li>Headcount grows linearly with transaction volume.</li>
+          <li>Compliance evidence = checklists, screenshots, email trails.</li>
+          <li>Audit prep is a quarterly fire drill.</li>
+          <li>Institutional knowledge lives in senior staff’s heads.</li>
+          <li>Job satisfaction in operations roles at all-time lows.</li>
+          <li>Volume scaling requires hiring and a 6-month ramp.</li>
+          <li>"Why was this approved?" answered by reconstructing email threads.</li>
+        </ul>
+      </div>
+      <div class="ba-col">
+        <div class="ba-head after">After — 12 months with BackOfficePilot</div>
+        <ul>
+          <li>20–30 FTE exception team + 2–3 person agent operations.</li>
+          <li>Volume scales; agent grows with it; humans don’t.</li>
+          <li>Every action logged with reasoning trace — auditor-ready.</li>
+          <li>Continuous audit, not seasonal prep.</li>
+          <li>Policy versioned in markdown, reviewed quarterly.</li>
+          <li>Senior staff work hard cases full-time; attrition recovers.</li>
+          <li>Volume scaling is a config change.</li>
+          <li>"Why was this approved?" answered with a hash-chained run bundle in seconds.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="pull">This is not an automation tool. It is an operating-model transformation. The total addressable spend is not "some share of the RPA market" — it is the labor cost of back-office workflows mid-market BFSI firms cannot afford to keep doing themselves.</div>
+  </div>
+</section>
+
+<!-- 07 ROI -->
+<section id="roi" class="alt">
+  <a class="anchor" id="roi-a"></a>
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">07 · Per-workflow ROI</span>
+      <h2>The unit economics.</h2>
+      <p class="lead">Cost numbers below are mid-points of what we observe in pilots; your actual results depend on volume, complexity, and integration shape. We will share the full model on a discovery call.</p>
+    </div>
+
+    <div class="roi-grid">
+      <div class="roi-card">
+        <div class="name">Invoice reconciliation</div>
+        <div class="row"><span class="l">Human time per case</span><span class="v">~20 minutes</span></div>
+        <div class="row"><span class="l">Fully-loaded labor cost</span><span class="v">$11.67</span></div>
+        <div class="row"><span class="l">BackOfficePilot cost per run</span><span class="v">~$0.55</span></div>
+        <div class="row highlight"><span class="l">ROI per case</span><span class="v">~21×</span></div>
+      </div>
+      <div class="roi-card">
+        <div class="name">KYC / sanctions review</div>
+        <div class="row"><span class="l">Human time per case</span><span class="v">~45 minutes</span></div>
+        <div class="row"><span class="l">Fully-loaded labor cost</span><span class="v">$26.25</span></div>
+        <div class="row"><span class="l">BackOfficePilot cost per case</span><span class="v">~$0.78</span></div>
+        <div class="row highlight"><span class="l">ROI per case</span><span class="v">~33×</span></div>
+      </div>
+      <div class="roi-card">
+        <div class="name">Loan application processing</div>
+        <div class="row"><span class="l">Human time per case</span><span class="v">~35 minutes (clerical)</span></div>
+        <div class="row"><span class="l">Fully-loaded labor cost</span><span class="v">$20.42</span></div>
+        <div class="row"><span class="l">BackOfficePilot cost per case</span><span class="v">~$0.68</span></div>
+        <div class="row highlight"><span class="l">ROI per case</span><span class="v">~30×</span></div>
+      </div>
+      <div class="roi-card">
+        <div class="name">Account / cash reconciliation</div>
+        <div class="row"><span class="l">Human time per day</span><span class="v">~3 hours</span></div>
+        <div class="row"><span class="l">Fully-loaded labor cost</span><span class="v">$105 / day</span></div>
+        <div class="row"><span class="l">BackOfficePilot cost per day</span><span class="v">~$1.40</span></div>
+        <div class="row highlight"><span class="l">ROI per day</span><span class="v">~75×</span></div>
+      </div>
+    </div>
+
+    <p style="margin-top:28px">A mid-market bank that automates these four workflows is looking at <b>$400k–$900k of annual labor savings</b> against a BackOfficePilot subscription typically under $60k/year. That is the gap that justifies outcome-based pricing — and that anchors every customer conversation we have.</p>
+  </div>
+</section>
+
+<!-- 08 INDUSTRIES -->
+<section id="industries">
+  <a class="anchor" id="industries-a"></a>
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">08 · By industry</span>
+      <h2>Where BackOfficePilot fits today, and where it goes next.</h2>
+    </div>
+
+    <div class="ind-grid">
+      <div class="ind-card">
+        <span class="tag">Year 1 focus</span>
+        <h3>Community &amp; regional banks</h3>
+        <ul>
+          <li>Daily invoice and cash reconciliation across core banking + ERP.</li>
+          <li>KYC/AML reviews on new commercial accounts.</li>
+          <li>Loan operations: PDF → CRM data entry and underwriting checks.</li>
+          <li>Regulatory filing prep (Call Reports, FFIEC schedules).</li>
+        </ul>
+      </div>
+
+      <div class="ind-card">
+        <span class="tag">Year 1 focus</span>
+        <h3>Insurance carriers &amp; brokers</h3>
+        <ul>
+          <li>Claims adjudication on routine, low-complexity claims.</li>
+          <li>Premium billing reconciliation across multiple carrier systems.</li>
+          <li>Producer commission reconciliation.</li>
+          <li>Quarterly statutory reporting prep.</li>
+        </ul>
+      </div>
+
+      <div class="ind-card">
+        <span class="tag">Year 1 focus</span>
+        <h3>Asset / wealth management</h3>
+        <ul>
+          <li>Fund-accounting daily NAV reconciliation.</li>
+          <li>Trade-settlement break investigation.</li>
+          <li>Performance composite verification.</li>
+          <li>Regulatory filing (Form ADV, Form PF supporting schedules).</li>
+        </ul>
+      </div>
+
+      <div class="ind-card">
+        <span class="tag">Year 1 focus</span>
+        <h3>Growth-stage fintechs</h3>
+        <ul>
+          <li>Monthly close reconciliation against rapidly-changing systems.</li>
+          <li>Chargeback dispute responses across acquirer portals.</li>
+          <li>Customer-tier reconciliation between billing and CRM.</li>
+          <li>Investor-reporting prep for the first institutional rounds.</li>
+        </ul>
+      </div>
+
+      <div class="ind-card" style="grid-column:1 / -1">
+        <span class="tag">Year 2 expansion</span>
+        <h3>Healthcare revenue cycle</h3>
+        <ul>
+          <li>Prior-authorization submissions across payer portals.</li>
+          <li>Claims-denial reanalysis and resubmission with corrected codes.</li>
+          <li>Eligibility checks at the point of registration.</li>
+          <li>Out-of-pocket-cost estimation for patient pre-service quotes.</li>
+        </ul>
+        <p class="muted" style="margin-top:10px;font-size:13px">Healthcare RCM workflows share the structural signature of BFSI back-office: legacy systems, no APIs, rule-bound but not coded, high-volume low-per-case value. The same architecture moves over with a vertical adapter layer and the appropriate HIPAA controls.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container cta-grid">
+    <div>
+      <span class="eyebrow" style="color:var(--gold);display:inline-block;font-size:12px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:10px;font-weight:600">Next step</span>
+      <h2>See it on your workflow.</h2>
+      <p>A discovery call is 15 minutes. We will ask three questions: which back-office workflow eats your team’s week, what systems it touches, and what would success look like. We will come back five business days later with an agent that runs your actual workflow on a sandboxed copy of your data — at our cost.</p>
+      <div class="cta-actions">
+        <a class="btn btn-primary" href="landing.html#contact">Book a 15-minute call</a>
+        <a class="btn btn-ghost" href="landing.html">Back to the landing page</a>
+      </div>
+    </div>
+    <div>
+      <div style="background:var(--navy-dark);border:1px solid rgba(202,220,252,.15);border-radius:14px;padding:24px">
+        <div style="font-size:12px;color:var(--gold);letter-spacing:.18em;text-transform:uppercase;font-weight:700;margin-bottom:14px">Pilot terms — at a glance</div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(202,220,252,.1)">
+          <span style="color:var(--ice)">Pilot fee</span><span style="color:#fff;font-weight:700">$25,000</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(202,220,252,.1)">
+          <span style="color:var(--ice)">Pilot duration</span><span style="color:#fff;font-weight:700">90 days</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(202,220,252,.1)">
+          <span style="color:var(--ice)">Outcome fee (yrs 1–2)</span><span style="color:#fff;font-weight:700">25% of savings</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(202,220,252,.1)">
+          <span style="color:var(--ice)">Platform subscription</span><span style="color:#fff;font-weight:700">$2,500 / workflow / mo</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding:10px 0">
+          <span style="color:var(--ice)">Pilot fee refundable against</span><span style="color:#fff;font-weight:700">Year-one outcome fees</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap">
+      <a class="brand" href="landing.html" style="color:#fff"><span class="brand-mark" aria-hidden="true"></span><span>BackOfficePilot</span></a>
+      <div class="small">© 2026 BackOfficePilot. &nbsp; · &nbsp; <a href="landing.html">Landing</a> &nbsp; · &nbsp; <a href="#">Privacy</a> &nbsp; · &nbsp; <a href="#">Terms</a></div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

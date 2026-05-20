@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BackOfficePilot — Developer Implementation Guide</title>
+<style>
+:root{--navy:#0B1F4D;--ice:#CADCFC;--gold:#F9C846;--teal:#0D9488;--coral:#F96167;--bg:#f8fafc;--card:#fff;--border:#e2e8f0;--text:#1e293b;--muted:#64748b}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.7;padding:0}
+.container{max-width:1200px;margin:0 auto;padding:2rem}
+h1{color:var(--navy);font-size:2.5rem;margin-bottom:0.5rem;border-bottom:4px solid var(--gold);padding-bottom:0.5rem}
+h2{color:var(--navy);font-size:1.8rem;margin:2.5rem 0 1rem;padding:0.5rem 0;border-bottom:2px solid var(--ice)}
+h3{color:var(--teal);font-size:1.3rem;margin:1.5rem 0 0.75rem}
+h4{color:var(--navy);font-size:1.1rem;margin:1.2rem 0 0.5rem}
+p{margin:0.75rem 0}
+pre{background:var(--navy);color:#e2e8f0;padding:1.25rem;border-radius:8px;overflow-x:auto;font-size:0.85rem;line-height:1.5;margin:1rem 0}
+code{font-family:'JetBrains Mono',Consolas,monospace;font-size:0.85em}
+:not(pre)>code{background:var(--ice);padding:2px 6px;border-radius:4px;color:var(--navy)}
+table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:0.9rem}
+th{background:var(--navy);color:#fff;padding:0.75rem 1rem;text-align:left}
+td{padding:0.6rem 1rem;border-bottom:1px solid var(--border)}
+tr:nth-child(even){background:#f1f5f9}
+.badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:0.75rem;font-weight:600}
+.badge-critical{background:var(--coral);color:#fff}
+.badge-important{background:var(--gold);color:var(--navy)}
+.badge-info{background:var(--ice);color:var(--navy)}
+.callout{border-left:4px solid var(--gold);background:#fffbeb;padding:1rem 1.25rem;border-radius:0 8px 8px 0;margin:1rem 0}
+.callout-danger{border-left-color:var(--coral);background:#fef2f2}
+.callout-info{border-left-color:var(--teal);background:#f0fdfa}
+.toc{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.5rem 2rem;margin:1.5rem 0}
+.toc ol{padding-left:1.5rem}
+.toc li{margin:0.4rem 0}
+.toc a{color:var(--navy);text-decoration:none;font-weight:500}
+.toc a:hover{color:var(--teal);text-decoration:underline}
+.diagram{background:var(--navy);color:#a5f3fc;padding:1.5rem;border-radius:8px;overflow-x:auto;font-family:'JetBrains Mono',Consolas,monospace;font-size:0.78rem;line-height:1.4;margin:1rem 0;white-space:pre}
+.hero{background:linear-gradient(135deg,var(--navy) 0%,#1e3a5f 100%);color:#fff;padding:3rem;border-radius:12px;margin-bottom:2rem}
+.hero h1{color:#fff;border-bottom-color:var(--gold)}
+.hero p{color:var(--ice);font-size:1.1rem}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin:1rem 0}
+@media(max-width:768px){.grid-2{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1.25rem}
+.card h4{margin-top:0}
+.step-num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:var(--teal);color:#fff;border-radius:50%;font-size:0.8rem;font-weight:700;margin-right:0.5rem}
+ul,ol{padding-left:1.5rem;margin:0.5rem 0}
+li{margin:0.3rem 0}
+.subtitle{color:var(--muted);font-size:1rem;margin-top:0.25rem}
+hr{border:none;border-top:1px solid var(--border);margin:2rem 0}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="hero">
+<h1>BackOfficePilot</h1>
+<p>Developer Implementation Guide — Multi-Model Agentic Automation for BFSI Back-Office</p>
+</div>
+
+<nav class="toc">
+<strong>Table of Contents</strong>
+<ol>
+<li><a href="#business-problem">The Business Problem & Enterprise Need</a></li>
+<li><a href="#overview">Project Overview</a></li>
+<li><a href="#architecture">AWS Architecture Diagrams</a></li>
+<li><a href="#stack">Technology Stack</a></li>
+<li><a href="#prerequisites">Prerequisites & Environment Setup</a></li>
+<li><a href="#structure">Repository Structure</a></li>
+<li><a href="#build-guide">Step-by-Step Build Guide</a></li>
+<li><a href="#methodology">Development Methodology</a></li>
+<li><a href="#api">API Contract</a></li>
+<li><a href="#data-model">Data Model</a></li>
+<li><a href="#patterns">Key Design Patterns</a></li>
+<li><a href="#deployment">Deployment & CI/CD</a></li>
+<li><a href="#testing">Testing Strategy</a></li>
+<li><a href="#reference">Quick Reference</a></li>
+</ol>
+</nav>
+
+<!-- ============================================================ -->
+<h2 id="business-problem">1. The Business Problem & Enterprise Need</h2>
+
+<h3>The $400B Back-Office Problem in BFSI</h3>
+
+<p>Banks, insurance companies, and financial services firms spend <strong>$400+ billion annually</strong> on back-office operations — manual, repetitive, rule-heavy tasks performed by humans navigating legacy systems. These operations are:</p>
+
+<div class="grid-2">
+<div class="card">
+<h4>🏦 What Operations Teams Do Today</h4>
+<ul>
+<li><strong>Invoice Reconciliation:</strong> Manually download bank statements, cross-reference against ERP invoices, identify mismatches, post journal entries — 2-4 hours daily per analyst</li>
+<li><strong>KYC Verification:</strong> Navigate 5-8 different portals to verify customer identity, check sanctions lists, compile evidence packages — 45 min per case</li>
+<li><strong>Loan Operations:</strong> Pull credit reports, verify collateral documents, update lending CRM, generate compliance letters — 30 min per application</li>
+<li><strong>Regulatory Filing:</strong> Extract data from multiple systems, transform into regulatory format, validate against rules, submit to portals — days per filing cycle</li>
+</ul>
+</div>
+<div class="card">
+<h4>💸 Why This Costs So Much</h4>
+<ul>
+<li><strong>Labor cost:</strong> $35-75/hour fully-loaded per operations analyst</li>
+<li><strong>Error rate:</strong> 2-5% manual error rate → costly corrections, regulatory fines</li>
+<li><strong>Legacy systems:</strong> No APIs — humans must navigate browser UIs on 15-20 year old ERPs</li>
+<li><strong>Compliance burden:</strong> Every action must be auditable for 7+ years (SOC 2, SOX, Basel III)</li>
+<li><strong>Scale ceiling:</strong> Hiring more analysts is linear cost; volume grows exponentially</li>
+</ul>
+</div>
+</div>
+
+<h3>Why Existing Solutions Fail</h3>
+
+<table>
+<tr><th>Approach</th><th>Why It Fails for BFSI</th></tr>
+<tr><td><strong>Traditional RPA</strong> (UiPath, Blue Prism)</td><td>Brittle selectors break on UI changes. No reasoning — cannot handle exceptions. No audit trail that satisfies regulators. $150K+ per bot license.</td></tr>
+<tr><td><strong>API Integration</strong></td><td>Legacy banking portals and ERPs (built 2005-2010) have no usable APIs. Integration projects take 12-18 months and $2M+.</td></tr>
+<tr><td><strong>Single-Model AI Agents</strong></td><td>Using one LLM for both reasoning AND UI execution is either too expensive ($3+/run) or too unreliable (UI agent making policy decisions).</td></tr>
+<tr><td><strong>Offshore BPO</strong></td><td>Still manual, still error-prone, adds data residency risk, 6-month ramp-up per process.</td></tr>
+</table>
+
+<h3>What BackOfficePilot Solves</h3>
+
+<div class="callout">
+<strong>Core Insight:</strong> Back-office work naturally splits into <em>reasoning</em> (interpret policy, classify exceptions, make decisions) and <em>execution</em> (click buttons, fill forms, download files). Using two specialized AI models — one for each — delivers 10× cost reduction with audit-grade reliability.
+</div>
+
+<table>
+<tr><th>Enterprise Need</th><th>How BackOfficePilot Addresses It</th></tr>
+<tr><td><strong>Cost Reduction</strong></td><td>$0.55/run vs $35-75/hour human labor. 95%+ cost savings on repetitive workflows.</td></tr>
+<tr><td><strong>Legacy System Access</strong></td><td>Nova Act drives browser UIs directly — no API needed. Works on any web-based system.</td></tr>
+<tr><td><strong>Regulatory Compliance</strong></td><td>SHA-256 hash-chained audit log, S3 Object Lock (WORM), 7-year retention. Tamper-evident by design.</td></tr>
+<tr><td><strong>Exception Handling</strong></td><td>AI classifies exceptions, routes to humans via Slack/Teams with full context. SLA tracking built-in.</td></tr>
+<tr><td><strong>Multi-Tenant Security</strong></td><td>Per-customer IAM isolation, encrypted at rest/transit, VPC isolation. SOC 2 ready.</td></tr>
+<tr><td><strong>Cost Transparency</strong></td><td>Real-time per-run cost meter. Compare against labor baseline. CFO-ready savings dashboard.</td></tr>
+<tr><td><strong>Zero-Downtime Updates</strong></td><td>Canary rollouts via AgentCore Registry. Rollback in &lt;60 seconds. In-flight runs never disrupted.</td></tr>
+<tr><td><strong>Policy-Driven Automation</strong></td><td>Customer uploads policy markdown (tolerance rules, matching criteria). AI applies them — no code change needed.</td></tr>
+</table>
+
+<h3>Target Market & Users</h3>
+
+<table>
+<tr><th>User Persona</th><th>Pain Point</th><th>What They Get</th></tr>
+<tr><td><strong>Operations Analyst</strong></td><td>Spends 80% of day on repetitive reconciliation</td><td>Reviews only exceptions; agent handles the rest</td></tr>
+<tr><td><strong>BSA / Compliance Officer</strong></td><td>Cannot prove automation decisions are auditable</td><td>Hash-chained audit log with full reasoning trace</td></tr>
+<tr><td><strong>CFO / COO</strong></td><td>Operations cost growing linearly with volume</td><td>Real-time cost dashboard showing 95% savings vs labor</td></tr>
+<tr><td><strong>CTO / VP Engineering</strong></td><td>12-month API integration projects for legacy systems</td><td>UI-level automation deployed in weeks, not months</td></tr>
+</table>
+
+<h3>Business Model</h3>
+<ul>
+<li><strong>Pricing:</strong> Outcome-based — customer pays per successful workflow run (~$0.55-2.00/run depending on complexity)</li>
+<li><strong>Target ARR:</strong> $750K within 12 months (2+ paying customers)</li>
+<li><strong>Expansion:</strong> Start with reconciliation → expand to KYC, loan-ops, regulatory filing per customer</li>
+</ul>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="overview">2. Project Overview</h2>
+
+<h3>What is BackOfficePilot?</h3>
+<p>A <strong>multi-model agentic automation platform</strong> for BFSI back-office. Two AI models collaborate through a deterministic orchestrator:</p>
+
+<div class="diagram">┌─────────────────────────────────────────────────────────────────────┐
+│                    ORCHESTRATOR (PERC Loop)                          │
+│              Plan → Execute → Reconcile → Commit                    │
+├─────────────────────────────┬───────────────────────────────────────┤
+│     REASONER                │         EXECUTOR                      │
+│     Claude Opus 4.6         │         Amazon Nova Act (primary)     │
+│     via Amazon Bedrock      │         AgentCore Browser (fallback)  │
+│                             │                                       │
+│  • Plans workflows          │  • Drives browser UIs                 │
+│  • Interprets policy        │  • Navigates legacy ERPs              │
+│  • Classifies exceptions    │  • Downloads/uploads files            │
+│  • Writes audit narrative   │  • Fills forms, clicks buttons        │
+└─────────────────────────────┴───────────────────────────────────────┘</div>
+
+<h3>First Use Case: Invoice Reconciliation</h3>
+<p>Daily 3-way match: download bank transactions → export open invoices from NetSuite → match using policy rules → post journal entries → escalate exceptions to humans via Slack.</p>
+<p><strong>Budget:</strong> &lt; $1.00 per run, &lt; 15 minutes duration.</p>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="architecture">3. AWS Architecture Diagrams</h2>
+
+<h3>3.1 High-Level System Context</h3>
+<div class="diagram">                    ┌──────────────────────────────────────┐
+                    │         BackOfficePilot               │
+                    │   Multi-Model Agent Platform          │
+                    └──────────┬───────────────────────────┘
+                               │
+        ┌──────────────────────┼──────────────────────────┐
+        │                      │                          │
+        ▼                      ▼                          ▼
+┌───────────────┐    ┌─────────────────┐    ┌─────────────────────┐
+│ Amazon Bedrock│    │ Amazon Nova Act  │    │ AWS AgentCore       │
+│ Claude Opus   │    │ (UI Automation) │    │ • Runtime           │
+│ (Reasoning)   │    │                 │    │ • Gateway           │
+└───────────────┘    └─────────────────┘    │ • Memory            │
+                                            │ • Registry          │
+        ┌───────────────────────────────┐   │ • Browser           │
+        │ Customer Systems              │   │ • Observability     │
+        │ • NetSuite / Sage (ERP)       │   └─────────────────────┘
+        │ • Banking Portals             │
+        │ • Lending CRMs                │           │
+        │ • Slack / Teams / Email       │           ▼
+        └───────────────────────────────┘   ┌─────────────────────┐
+                                            │ CloudWatch GenAI    │
+                                            │ Observability       │
+                                            └─────────────────────┘</div>
+
+<h3>3.2 AWS Account & VPC Architecture</h3>
+<div class="diagram">┌─────────────────────────────────────────────────────────────────────────┐
+│                        AWS Organization (Single Payer)                    │
+│                                                                          │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │  PRODUCTION ACCOUNT (backofficepilot-prod)                       │    │
+│  │                                                                   │    │
+│  │  VPC: 10.10.0.0/16 (us-east-1)                                  │    │
+│  │  ┌─────────────────────────────────────────────────────────┐     │    │
+│  │  │ Public Subnets                                           │     │    │
+│  │  │   • API Gateway / ALB                                    │     │    │
+│  │  │   • NAT Gateways                                         │     │    │
+│  │  ├─────────────────────────────────────────────────────────┤     │    │
+│  │  │ Private Subnets                                          │     │    │
+│  │  │   • Lambda (Control Plane API)                           │     │    │
+│  │  │   • Fargate (Admin Jobs)                                 │     │    │
+│  │  ├─────────────────────────────────────────────────────────┤     │    │
+│  │  │ Isolated Subnets (NO internet egress)                    │     │    │
+│  │  │   • AgentCore Runtime Fleet                              │     │    │
+│  │  │   • AgentCore Gateway Endpoints                          │     │    │
+│  │  │   • VPC Endpoints for AWS Services                       │     │    │
+│  │  └─────────────────────────────────────────────────────────┘     │    │
+│  │                                                                   │    │
+│  │  Data Stores: DynamoDB, S3+ObjectLock, OpenSearch, Secrets, KMS  │    │
+│  │  AgentCore: Memory, Registry, Observability                      │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+│                                                                          │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │  UAT ACCOUNT (backofficepilot-uat)                               │    │
+│  │  VPC: 10.20.0.0/16 — Mirror of Prod, NO shared data             │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+│                                                                          │
+│  ┌─────────────────────────────────────────────────────────────────┐    │
+│  │  CI ACCOUNT (backofficepilot-ci)                                 │    │
+│  │  • CDK Deploy Role (cross-account assume)                        │    │
+│  │  • S3 Build Artifacts • GitHub Actions                           │    │
+│  └─────────────────────────────────────────────────────────────────┘    │
+│                                                                          │
+│  ⚠️  NO VPC Peering, NO Transit Gateway between Prod and UAT            │
+└─────────────────────────────────────────────────────────────────────────┘</div>
+
+<h3>3.3 Runtime Architecture (What Runs Where)</h3>
+<div class="diagram">┌─────────────────────────────────────────────────────────────────────────┐
+│                         RUNTIME ARCHITECTURE                              │
+│                                                                          │
+│  ┌──────────────┐     HTTPS/JWT      ┌──────────────────────────┐       │
+│  │  Next.js 14  │ ──────────────────► │  API Gateway + Lambda    │       │
+│  │  Dashboard   │                     │  (FastAPI Control Plane)  │       │
+│  │  (Vercel /   │ ◄── SSE ────────── │                          │       │
+│  │   Amplify)   │                     │  Endpoints:              │       │
+│  └──────────────┘                     │  • /customers/*/runs     │       │
+│        ▲                              │  • /runs/*/steps         │       │
+│        │ Cognito JWT                  │  • /escalations          │       │
+│  ┌─────┴────────┐                    └───────────┬──────────────┘       │
+│  │ Amazon       │                                │ Read/Write             │
+│  │ Cognito      │                                ▼                       │
+│  └──────────────┘                    ┌──────────────────────────┐       │
+│                                      │  DynamoDB + S3            │       │
+│  ┌──────────────────────────────┐    └──────────────────────────┘       │
+│  │  EventBridge Scheduler       │                ▲                       │
+│  │  (Cron triggers)             │                │                       │
+│  └──────────────┬───────────────┘                │                       │
+│                 │ Invoke                          │                       │
+│                 ▼                                 │                       │
+│  ┌──────────────────────────────────────────────────────────────┐       │
+│  │              AGENTCORE RUNTIME (Orchestrator Agent)            │       │
+│  │                                                                │       │
+│  │  ┌────────────────────────────────────────────────────────┐   │       │
+│  │  │  PERC Loop (Plan → Execute → Reconcile → Commit)       │   │       │
+│  │  │  ┌─────────────┐  ┌──────────────┐  ┌──────────────┐  │   │       │
+│  │  │  │ Bedrock     │  │ Nova Act     │  │ AgentCore    │  │   │       │
+│  │  │  │ Opus 4.6    │  │ Executor     │  │ Browser      │  │   │       │
+│  │  │  │ (Reasoner)  │  │ (Primary)    │  │ (Fallback)   │  │   │       │
+│  │  │  └─────────────┘  └──────────────┘  └──────────────┘  │   │       │
+│  │  └────────────────────────────────────────────────────────┘   │       │
+│  │  Emits: Domain Events → EventBridge → Subscribers             │       │
+│  │    • AuditWriter • CostMeter • EscalationOpener               │       │
+│  └──────────────────────────────────────────────────────────────┘       │
+│                                                                          │
+│  AgentCore Observability → CloudWatch GenAI Observability                │
+└─────────────────────────────────────────────────────────────────────────┘</div>
+
+<h3>3.4 Data Flow — Single Reconciliation Run</h3>
+<div class="diagram">┌─────────┐    Cron/Manual     ┌──────────────┐
+│EventBridge│ ────────────────► │ Orchestrator │
+│Scheduler │                    │ (PERC Loop)  │
+└─────────┘                    └──────┬───────┘
+                                      │
+                    ┌─────────────────┼─────────────────┐
+                    ▼                 ▼                  ▼
+            ┌──────────────┐  ┌────────────┐  ┌──────────────┐
+            │ 1. PLAN      │  │ 2. EXECUTE │  │ 3. RECONCILE │
+            │ Claude Opus  │  │ Nova Act   │  │ Claude Opus  │
+            │ reads policy │  │ drives UI  │  │ checks match │
+            │ produces plan│  │ on ERP     │  │ vs policy    │
+            └──────────────┘  └────────────┘  └──────────────┘
+                                                      │
+                              ┌────────────────────────┤
+                    ┌─────────▼──────┐      ┌─────────▼──────┐
+                    │ Match OK       │      │ Exception      │
+                    │ → Post journal │      │ → Escalate     │
+                    │ → Commit       │      │ → Slack notify │
+                    └────────────────┘      └────────────────┘
+                              │                        │
+                              ▼                        ▼
+                    ┌────────────────────────────────────────┐
+                    │ 4. COMMIT                               │
+                    │ • Audit event (hash-chained → S3 WORM) │
+                    │ • Cost meter update (DDB)               │
+                    │ • Run bundle (S3) • Events (EB)         │
+                    └────────────────────────────────────────┘</div>
+
+<h3>3.5 Tenant Isolation Architecture</h3>
+<div class="diagram">┌─────────────────────────────────────────────────────────────────┐
+│                    TENANT ISOLATION MODEL                         │
+│                                                                   │
+│  Customer A (JWT: customer_id=acme)                              │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │ DDB:     PK = CUSTOMER#acme, RUN#acme_*                  │    │
+│  │ S3:      s3://bop-prod-runs/cust=acme/*                  │    │
+│  │ Secrets: cust/acme/netsuite/creds                        │    │
+│  │ KMS:     alias/bop-prod-cust-acme                        │    │
+│  │ Memory:  bop/prod/cust/acme                              │    │
+│  │ IAM:     PerCustomerIamRole(customer_id="acme")          │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                   │
+│  Customer B (JWT: customer_id=globex)                            │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │ DDB:     PK = CUSTOMER#globex, RUN#globex_*              │    │
+│  │ S3:      s3://bop-prod-runs/cust=globex/*                │    │
+│  │ Secrets: cust/globex/bank_portal/creds                   │    │
+│  │ IAM:     PerCustomerIamRole(customer_id="globex")        │    │
+│  └─────────────────────────────────────────────────────────┘    │
+│                                                                   │
+│  ⚠️  IAM denies cross-prefix access + CloudTrail evidence        │
+│  ⚠️  JWT customer_id claim enforced on every API call            │
+└─────────────────────────────────────────────────────────────────┘</div>
+
+<h3>3.6 Orchestrator Internal Architecture (Hexagonal)</h3>
+<div class="diagram">┌─────────────────────────────────────────────────────────────────────────┐
+│                    ORCHESTRATOR (AgentCore Runtime)                       │
+│                                                                          │
+│  ┌─── src/api/ ─────────────────────────────────────────────────────┐   │
+│  │  WorkflowRunController (thin FastAPI router, returns 202)         │   │
+│  └───────────────────────────────────────────────────────────────────┘   │
+│                              │                                           │
+│  ┌─── src/application/ ─────────────────────────────────────────────┐   │
+│  │  RunWorkflowUseCase → PERCLoop → ExecutorRouter                   │   │
+│  │  Between each step: ✓ abort signal ✓ cost ceiling ✓ emit events   │   │
+│  └───────────────────────────────────────────────────────────────────┘   │
+│                              │                                           │
+│  ┌─── src/domain/ (PURE — zero AWS imports) ────────────────────────┐   │
+│  │  Models: Workflow, Plan, Step, Run, Exception, Escalation         │   │
+│  │  Logic:  ExceptionClassifier, PolicyApplier, CostCeilingEnforcer  │   │
+│  │  Ports:  ReasonerPort, ExecutorPort, MemoryPort, EventBusPort,    │   │
+│  │          AuditLogPort, SecretPort                                  │   │
+│  └───────────────────────────────────────────────────────────────────┘   │
+│                              │                                           │
+│  ┌─── src/adapters/ ────────────────────────────────────────────────┐   │
+│  │  bedrock/opus_reasoner.py      → implements ReasonerPort          │   │
+│  │  novaact/executor.py           → implements ExecutorPort          │   │
+│  │  agentcore/browser_executor.py → implements ExecutorPort          │   │
+│  │  agentcore/memory_adapter.py   → implements MemoryPort            │   │
+│  │  audit/s3_hash_chain.py        → implements AuditLogPort          │   │
+│  │  slack/escalation_adapter.py   → channel adapter                  │   │
+│  └───────────────────────────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────────────────────────┘</div>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="stack">4. Technology Stack</h2>
+
+<table>
+<tr><th>Layer</th><th>Technology</th><th>Why</th></tr>
+<tr><td><strong>Frontend</strong></td><td>Next.js 14 App Router, TypeScript, Tailwind CSS, shadcn/ui</td><td>SSR + RSC for fast first paint, type safety, accessible components</td></tr>
+<tr><td><strong>Backend</strong></td><td>Python 3.12, FastAPI, Pydantic v2</td><td>Async, OpenAPI-native, strong validation</td></tr>
+<tr><td><strong>Package Mgmt</strong></td><td>uv (Python), pnpm (frontend)</td><td>Fast, deterministic</td></tr>
+<tr><td><strong>BDD</strong></td><td>pytest-bdd</td><td>Integrates with pytest ecosystem</td></tr>
+<tr><td><strong>Testing</strong></td><td>pytest, hypothesis (property-based), Playwright (E2E)</td><td>Comprehensive coverage</td></tr>
+<tr><td><strong>Infrastructure</strong></td><td>AWS CDK (Python)</td><td>Same language as backend, type-safe IaC</td></tr>
+<tr><td><strong>Observability</strong></td><td>OpenTelemetry SDK → AgentCore Observability → CloudWatch</td><td>End-to-end tracing</td></tr>
+<tr><td><strong>AI Models</strong></td><td>Claude Opus 4.6 (Bedrock), Amazon Nova Act</td><td>Reasoning + UI execution</td></tr>
+<tr><td><strong>Runtime</strong></td><td>AWS Bedrock AgentCore (6 services)</td><td>Purpose-built agent hosting</td></tr>
+</table>
+
+<div class="callout-danger callout">⚠️ <strong>Locked stack.</strong> Changing any of the above requires writing an ADR in <code>specs/30-architecture/32-adrs/</code>.</div>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="prerequisites">5. Prerequisites & Environment Setup</h2>
+
+<h3>5.1 Required Tools</h3>
+<pre>
+# Python 3.12+
+python3 --version  # must be 3.12+
+
+# uv (Python package manager)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Node.js 20+ and pnpm
+node --version     # must be 20+
+npm install -g pnpm
+
+# AWS CLI v2, AWS CDK
+aws --version
+npm install -g aws-cdk
+
+# Git
+git --version
+</pre>
+
+<h3>5.2 AWS Account Setup</h3>
+<table>
+<tr><th>Account</th><th>Purpose</th><th>Engineer Access</th></tr>
+<tr><td><code>backofficepilot-ci</code></td><td>CI/CD, deploy role</td><td>Full</td></tr>
+<tr><td><code>backofficepilot-uat</code></td><td>Development & testing</td><td>Read/Write</td></tr>
+<tr><td><code>backofficepilot-prod</code></td><td>Customer production</td><td>Just-in-time only</td></tr>
+</table>
+
+<div class="callout-info callout">💡 <strong>For MVP development, start with UAT account only.</strong></div>
+
+<h3>5.3 AWS Services to Enable (UAT Account)</h3>
+<ul>
+<li>Amazon Bedrock (enable Claude Opus 4.6 model access)</li>
+<li>Amazon Nova Act (request access)</li>
+<li>AWS Bedrock AgentCore (Runtime, Gateway, Memory, Registry, Browser, Observability)</li>
+<li>DynamoDB, S3, Lambda, API Gateway, EventBridge</li>
+<li>Cognito, Secrets Manager, KMS, OpenSearch Serverless, CloudWatch</li>
+</ul>
+
+<h3>5.4 Local Development Setup</h3>
+<pre>
+# Clone the repo
+git clone &lt;repo-url&gt; backofficepilot && cd backofficepilot
+
+# Python environment
+uv venv && source .venv/bin/activate
+uv pip install -e ".[dev]"
+
+# Frontend
+cd web && pnpm install && cd ..
+
+# AWS credentials
+aws configure --profile bop-uat
+export AWS_PROFILE=bop-uat
+
+# Verify
+make test    # should pass
+make lint    # should pass
+</pre>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="structure">6. Repository Structure</h2>
+
+<pre>
+backofficepilot/
+├── specs/                          ← SOURCE OF TRUTH (read first!)
+│   ├── 00-meta/                    ← Glossary, naming, traceability
+│   ├── 10-product-bop/
+│   │   ├── 11-requirements/        ← REQ-PRD-001 through 016
+│   │   ├── 12-design/              ← DESIGN-A2-001 through 008
+│   │   └── 13-stories/             ← STORY-A3-* (MVP), STORY-A4-* (Phase 2)
+│   ├── 30-architecture/
+│   │   ├── 31-c4-diagrams/         ← System context, container, component
+│   │   ├── 32-adrs/                ← ADR-001 through ADR-012
+│   │   ├── 33-data-model/          ← Core entities, storage strategy
+│   │   └── 34-api-contract/        ← openapi.yaml + schemas
+│   └── 40-non-functional/          ← NFR-SEC-*, NFR-PERF-*, NFR-COST-*
+├── features/                       ← BDD .feature files (one per story)
+├── tests/                          ← pytest + pytest-bdd (mirrors src/)
+│   ├── domain/                     ← Pure domain model tests
+│   ├── application/                ← Orchestrator tests
+│   └── adapters/                   ← Integration tests
+├── src/                            ← Python backend
+│   ├── domain/                     ← PURE models (NO AWS imports)
+│   ├── application/                ← Orchestration, use cases
+│   ├── adapters/                   ← AWS integrations
+│   └── api/                        ← FastAPI routers (thin)
+├── web/                            ← Next.js 14 frontend
+│   ├── app/(customer)/             ← Customer pages
+│   ├── components/                 ← shadcn/ui + custom
+│   └── lib/_generated/             ← OpenAPI client (DO NOT EDIT)
+├── workflows/                      ← Workflow YAML definitions
+├── policy/                         ← Customer policy markdown
+├── config/pricing.yaml             ← Cost meter pricing
+├── infra/                          ← AWS CDK (Python)
+│   ├── stacks/                     ← network, data, security, agentcore, auth
+│   └── constructs/                 ← PerCustomerIamRole
+├── scripts/                        ← Traceability, codegen, audit verify
+├── Makefile                        ← Common commands
+└── .github/workflows/ci.yml        ← CI pipeline
+</pre>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="build-guide">7. Step-by-Step Build Guide (MVP — 3 Weeks)</h2>
+
+<h3>WEEK 1 — Foundation & Infrastructure</h3>
+
+<h4><span class="step-num">1</span> Bootstrap Repo (STORY-A3-001) — Day 1</h4>
+<pre>
+mkdir -p src/{domain,application,adapters,api} tests/{domain,application,adapters}
+uv init
+# pyproject.toml: fastapi, pydantic>=2.0, uvicorn, mangum, boto3
+# dev: pytest, pytest-bdd, hypothesis, ruff, mypy, playwright
+
+cd web && pnpm create next-app@14 . --typescript --tailwind --app
+pnpm add @tanstack/react-query recharts react-hook-form zod && cd ..
+
+# Create Makefile, .github/workflows/ci.yml, .pre-commit-config.yaml
+</pre>
+<p><strong>Verify:</strong> <code>make test</code> runs, <code>make lint</code> passes.</p>
+
+<h4><span class="step-num">2</span> CDK Infrastructure (STORY-A3-002) — Days 2-3</h4>
+<table>
+<tr><th>Stack</th><th>Resources</th></tr>
+<tr><td><code>network_stack.py</code></td><td>VPC (10.20.0.0/16), 3 AZs, public/private/isolated subnets, NAT GW</td></tr>
+<tr><td><code>data_stack.py</code></td><td>DynamoDB (single-table), S3 (runs, audit+ObjectLock, policy), OpenSearch</td></tr>
+<tr><td><code>security_stack.py</code></td><td>KMS CMK, PerCustomerIamRole construct, Secrets Manager</td></tr>
+<tr><td><code>agentcore_stack.py</code></td><td>AgentCore Runtime, Gateway, Memory, EventBridge rules</td></tr>
+<tr><td><code>auth_stack.py</code></td><td>Cognito User Pool, app client</td></tr>
+</table>
+<p><strong>Verify:</strong> <code>cdk synth</code> valid. <code>cdk deploy --all</code> provisions UAT.</p>
+
+<h4><span class="step-num">3</span> FastAPI Control Plane (STORY-A3-003) — Days 3-4</h4>
+<p>OpenAPI spec first → implement FastAPI → generate TypeScript client.</p>
+<pre>
+# Key endpoints:
+GET  /customers/{id}/runs              → listRuns
+GET  /runs/{id}                        → getRun
+GET  /runs/{id}/steps|audit|cost       → detail views
+POST /customers/{id}/workflows/{wf}/runs → startRun (202)
+POST /runs/{id}/abort                  → abortRun
+PUT  /customers/{id}/workflows/{wf}    → upsertWorkflow
+GET  /customers/{id}/escalations       → listEscalations
+POST /escalations/{id}/resolve         → resolveEscalation
+</pre>
+<p><strong>Verify:</strong> OpenAPI validates. TS client generates. JWT rejects invalid tokens.</p>
+
+<h4><span class="step-num">4</span> Next.js Dashboard (STORY-A3-004) — Days 4-5</h4>
+<p>App Router + shadcn/ui + Cognito auth + brand palette (navy/ice/gold/teal/coral).</p>
+<p><strong>Verify:</strong> Login works. Auth guards redirect. Brand palette applied.</p>
+
+<h4><span class="step-num">5</span> Domain Models (STORY-A3-005) — Day 5</h4>
+<p>Pydantic v2 models + Port ABCs + hypothesis tests. <strong>ZERO AWS imports in domain.</strong></p>
+<p><strong>Verify:</strong> <code>pytest tests/domain/</code> passes. No invariant violations.</p>
+
+<h3>WEEK 2 — Core Orchestration</h3>
+
+<h4><span class="step-num">6</span> Workflow Validator (STORY-A3-006) — Day 6</h4>
+<p>YAML parse → JSON Schema → Pydantic → cross-field validation → structured errors.</p>
+
+<h4><span class="step-num">7</span> Bedrock Opus Reasoner (STORY-A3-007) — Days 7-8</h4>
+<p>Implements <code>ReasonerPort</code>: plan generation, reconciliation, exception classification. Tracks token usage.</p>
+
+<h4><span class="step-num">8</span> Nova Act Executor (STORY-A3-008) — Days 8-9</h4>
+<p>Implements <code>ExecutorPort</code>: navigate, authenticate, execute actions, capture screenshots.</p>
+
+<h4><span class="step-num">9</span> AgentCore Browser Fallback (STORY-A3-009) — Day 9</h4>
+<p>Same interface, sandboxed Playwright. <code>ExecutorRouter</code> handles failover.</p>
+
+<h4><span class="step-num">10</span> PERC Loop ⭐ (STORY-A3-010) — Days 9-11</h4>
+<div class="callout-danger callout"><strong>CRITICAL PATH.</strong> This is the core orchestration engine.</div>
+<pre>
+class PERCLoop:
+    async def run(self, workflow, plan) -> RunResult:
+        for step in plan.steps:
+            if await self._is_aborted(run_id): break    # abort signal
+            if self.cost_ceiling.is_breached(): break    # cost ceiling
+
+            result = await self.executor_router.execute(step)
+            decision = await self.reasoner.reconcile(result, policy)
+
+            if decision.is_exception:
+                exception = self.classifier.classify(decision, step)
+                if step.retry_count >= max_retries:
+                    await self._escalate(exception); break
+
+            await self.event_bus.emit(StepExecuted(step, result))
+        await self.event_bus.emit(RunCompleted(run))
+</pre>
+<p><strong>Verify:</strong> 5-step workflow completes. Retry, ceiling, abort all work. Hypothesis passes.</p>
+
+<h3>WEEK 3 — Subscribers & Dashboard</h3>
+
+<h4><span class="step-num">11</span> Audit Writer (STORY-A3-011) — Day 12</h4>
+<p>SHA-256 hash chain → DDB + S3 Object Lock. Verification script.</p>
+
+<h4><span class="step-num">12</span> Cost Meter (STORY-A3-012) — Day 12</h4>
+<p>Event subscriber → pricing.yaml → per-run tally → CostMetered events → daily rollups.</p>
+
+<h4><span class="step-num">13</span> Slack Escalation (STORY-A3-013) — Day 13</h4>
+<p>Post messages with narrative + context + screenshots + Approve/Reject buttons.</p>
+
+<h4><span class="step-num">14</span> Dashboard: Run Pages (STORY-A3-014) — Days 13-14</h4>
+<p>Run list (paginated, filterable) + run detail (timeline, audit, cost, SSE live updates).</p>
+
+<h4><span class="step-num">15</span> Dashboard: Exceptions & Cost (STORY-A3-015) — Days 14-15</h4>
+<p>Exception queue (severity-grouped, inline actions) + cost charts (Recharts, CSV export).</p>
+
+<h4><span class="step-num">16</span> Traceability Generator (STORY-A3-016) — Day 15</h4>
+<p><code>scripts/build_traceability.py</code> — cross-references specs ↔ features ↔ tests.</p>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="methodology">8. Development Methodology</h2>
+
+<h3>The Iron Rule: SPEC → BDD → TDD → CODE</h3>
+<pre>
+1. READ the spec     → specs/10-product-bop/13-stories/STORY-A3-*
+2. WRITE BDD         → features/BDD-{story-id}.feature
+3. WRITE tests       → tests/{layer}/test_{name}.py (must be RED)
+4. IMPLEMENT         → Minimum code to turn tests GREEN
+5. REFACTOR          → Clean up without breaking tests
+6. UPDATE spec       → status: done, bump version
+7. UPDATE matrix     → make traceability
+</pre>
+
+<h3>What You Must NEVER Do</h3>
+<ul>
+<li>❌ Write code before the failing test exists</li>
+<li>❌ Put AWS imports in <code>src/domain/</code></li>
+<li>❌ Edit generated OpenAPI client code by hand</li>
+<li>❌ Mix domain logic and adapter logic in the same module</li>
+<li>❌ Skip the ADR for non-trivial architectural choices</li>
+</ul>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="api">9. API Contract</h2>
+
+<h3>Resource Model</h3>
+<pre>
+/customers/{customerId}/workflows                    GET, PUT
+/customers/{customerId}/workflows/{wfId}/runs        POST (start)
+/runs/{runId}                                        GET
+/runs/{runId}/steps | audit | cost                   GET
+/runs/{runId}/abort                                  POST
+/runs/{runId}/stream                                 SSE
+/customers/{customerId}/escalations                  GET
+/customers/{customerId}/escalations/stream           SSE
+/escalations/{escalationId}/resolve                  POST
+/policy-bundles/{bundleId}                           GET, PUT
+</pre>
+
+<h3>Conventions</h3>
+<table>
+<tr><th>Aspect</th><th>Choice</th></tr>
+<tr><td>Auth</td><td>JWT via Cognito. Scopes: <code>customer:read</code>, <code>customer:write</code>, <code>operator</code></td></tr>
+<tr><td>Pagination</td><td>Cursor-based (<code>?cursor=...</code>)</td></tr>
+<tr><td>Errors</td><td>RFC 9457 Problem Details</td></tr>
+<tr><td>Streaming</td><td>SSE (server → client)</td></tr>
+<tr><td>Idempotency</td><td><code>Idempotency-Key</code> header on writes</td></tr>
+<tr><td>Async ops</td><td><code>202 Accepted</code> + <code>Location</code> header</td></tr>
+</table>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="data-model">10. Data Model</h2>
+
+<h3>Core Entities</h3>
+<table>
+<tr><th>Entity</th><th>Store</th><th>Description</th></tr>
+<tr><td>Customer</td><td>DDB</td><td>BFSI institution (tier: pilot/platform/enterprise)</td></tr>
+<tr><td>Workflow</td><td>DDB</td><td>Versioned YAML automation definition</td></tr>
+<tr><td>Run</td><td>DDB + S3</td><td>Single workflow execution</td></tr>
+<tr><td>Plan</td><td>DDB + S3</td><td>Reasoner's step-by-step plan</td></tr>
+<tr><td>Step</td><td>DDB + S3</td><td>Unit of executor work</td></tr>
+<tr><td>Exception</td><td>DDB</td><td>Condition agent cannot resolve</td></tr>
+<tr><td>Escalation</td><td>DDB</td><td>Routing to human + SLA timer</td></tr>
+<tr><td>AuditEvent</td><td>S3 (WORM)</td><td>Hash-chained state transition</td></tr>
+<tr><td>CostMeter</td><td>DDB + Athena</td><td>Per-run cost breakdown</td></tr>
+<tr><td>PolicyBundle</td><td>S3 + DDB</td><td>Versioned markdown rules</td></tr>
+</table>
+
+<h3>DynamoDB Single-Table Design</h3>
+<table>
+<tr><th>Access Pattern</th><th>PK</th><th>SK</th></tr>
+<tr><td>Get customer</td><td><code>CUSTOMER#{id}</code></td><td><code>META</code></td></tr>
+<tr><td>List workflows</td><td><code>CUSTOMER#{id}</code></td><td><code>WORKFLOW#{wf_id}</code></td></tr>
+<tr><td>Get run</td><td><code>RUN#{run_id}</code></td><td><code>META</code></td></tr>
+<tr><td>List steps</td><td><code>RUN#{run_id}</code></td><td><code>STEP#{seq}</code></td></tr>
+<tr><td>Audit events</td><td><code>RUN#{run_id}</code></td><td><code>AUDIT#{seq:08d}</code></td></tr>
+<tr><td>Open escalations (GSI)</td><td><code>ESCQ#{customer_id}</code></td><td><code>OPEN#{opened_at}</code></td></tr>
+</table>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="patterns">11. Key Design Patterns</h2>
+
+<h3>Hexagonal Architecture</h3>
+<p><code>Domain (pure) ← Ports (interfaces) ← Adapters (AWS implementations)</code></p>
+<ul>
+<li>Domain has NO external dependencies</li>
+<li>Ports are abstract base classes</li>
+<li>Adapters implement ports — swap for testing</li>
+</ul>
+
+<h3>Event-Driven Internal Bus</h3>
+<p>Every state transition emits a domain event: <code>PlanCreated → StepExecuted → ExceptionRaised → RunCompleted → CostMetered</code></p>
+<p>Subscribers (audit, cost, escalation) are independent and decoupled.</p>
+
+<h3>Snapshot Semantics</h3>
+<p>Run records workflow + policy bundle hashes at start. Executes against that snapshot forever, even if config changes mid-run.</p>
+
+<h3>Cost Ceiling Enforcement</h3>
+<p>Soft ceiling: <code>max_cost_per_run_usd</code> (default $1.00). Hard ceiling: 2× soft (kill switch). Checked between every step.</p>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="deployment">12. Deployment & CI/CD</h2>
+
+<h3>Promotion Flow</h3>
+<pre>
+local dev → push → CI (lint + test + cdk synth)
+                        ↓
+                   cdk deploy --env uat
+                        ↓
+                   manual approval gate
+                        ↓
+                   cdk deploy --env prod
+</pre>
+
+<h3>Agent Rollout (AgentCore Registry)</h3>
+<pre>
+CI → pushVersion(image, git_sha) → Registry
+Operator → startCanary(10%) → monitor 1hr → promoteToFull(100%)
+         OR → rollback(&lt;60 seconds)
+</pre>
+
+<h3>Key Commands</h3>
+<pre>
+make test                    # Run all tests
+make lint                    # Ruff + mypy + tsc
+make codegen                 # Regenerate TypeScript client
+make traceability            # Rebuild traceability matrix
+cd infra && cdk synth        # Validate CloudFormation
+cd infra && cdk deploy --all # Deploy to current account
+cd web && pnpm dev           # Frontend dev server
+</pre>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="testing">13. Testing Strategy</h2>
+
+<table>
+<tr><th>Layer</th><th>Tool</th><th>What to Test</th></tr>
+<tr><td>Domain models</td><td>pytest + hypothesis</td><td>Status transitions, invariants, property-based</td></tr>
+<tr><td>Application</td><td>pytest + hypothesis</td><td>Orchestration, retry, abort, ceiling</td></tr>
+<tr><td>Adapters</td><td>pytest + moto/localstack</td><td>AWS integration, error handling</td></tr>
+<tr><td>API</td><td>pytest + httpx</td><td>Endpoints, auth, tenant isolation</td></tr>
+<tr><td>BDD</td><td>pytest-bdd</td><td>Acceptance criteria from specs</td></tr>
+<tr><td>Frontend</td><td>Playwright</td><td>E2E flows, accessibility (axe-core)</td></tr>
+</table>
+
+<hr>
+
+<!-- ============================================================ -->
+<h2 id="reference">14. Quick Reference</h2>
+
+<h3>Reading Order for New Developers</h3>
+<ol>
+<li><strong>This file</strong> (GUIDE.html)</li>
+<li><code>specs/CLAUDE.md</code> — engineering discipline</li>
+<li><code>specs/00-meta/00-glossary.md</code> — terminology</li>
+<li><code>specs/30-architecture/31-c4-diagrams/DESIGN-C4-001-context.md</code></li>
+<li><code>specs/30-architecture/31-c4-diagrams/DESIGN-C4-003-component-orchestrator.md</code></li>
+<li><code>specs/10-product-bop/13-stories/EPIC-A-001-mvp-platform-foundation.md</code></li>
+<li>Pick your first story from <code>STORY-A3-*</code></li>
+</ol>
+
+<h3>Brand Palette</h3>
+<table>
+<tr><th>Name</th><th>Hex</th><th>Swatch</th><th>Usage</th></tr>
+<tr><td>Navy</td><td><code>#0B1F4D</code></td><td style="background:#0B1F4D;width:40px"></td><td>Primary text, headers</td></tr>
+<tr><td>Ice</td><td><code>#CADCFC</code></td><td style="background:#CADCFC;width:40px"></td><td>Backgrounds, cards</td></tr>
+<tr><td>Gold</td><td><code>#F9C846</code></td><td style="background:#F9C846;width:40px"></td><td>Accents, highlights</td></tr>
+<tr><td>Teal</td><td><code>#0D9488</code></td><td style="background:#0D9488;width:40px"></td><td>Success, CTAs</td></tr>
+<tr><td>Coral</td><td><code>#F96167</code></td><td style="background:#F96167;width:40px"></td><td>Errors, SLA breach</td></tr>
+</table>
+
+<h3>Environment Variables</h3>
+<pre>
+# Backend
+AWS_REGION=us-east-1
+AWS_PROFILE=bop-uat
+COGNITO_USER_POOL_ID=&lt;from CDK output&gt;
+DDB_TABLE_NAME=bop-uat-main
+AUDIT_BUCKET=bop-uat-audit
+RUNS_BUCKET=bop-uat-runs
+EVENTBRIDGE_BUS_NAME=bop-uat-events
+
+# Frontend
+NEXT_PUBLIC_API_URL=https://&lt;api-gw-id&gt;.execute-api.us-east-1.amazonaws.com
+NEXT_PUBLIC_COGNITO_DOMAIN=&lt;domain&gt;.auth.us-east-1.amazoncognito.com
+NEXT_PUBLIC_COGNITO_CLIENT_ID=&lt;client-id&gt;
+</pre>
+
+<h3>MVP Definition of Done</h3>
+<ul>
+<li>☐ All 16 stories <code>status: done</code></li>
+<li>☐ Reconciliation workflow runs unattended in UAT for 5 consecutive business days</li>
+<li>☐ p95 run-start latency under 5 seconds</li>
+<li>☐ Per-run cost under $1.00</li>
+<li>☐ Dashboard renders: run list, run detail, exception queue, cost view</li>
+<li>☐ CI green; traceability matrix ≥ 90% REQ coverage</li>
+<li>☐ Demo video recorded (90 seconds, one full run)</li>
+</ul>
+
+<h3>AWS Services & Cost Summary</h3>
+<table>
+<tr><th>Service</th><th>Purpose</th><th>Cost Driver</th></tr>
+<tr><td>Amazon Bedrock (Claude Opus 4.6)</td><td>Reasoning, planning</td><td>~$0.55/run tokens</td></tr>
+<tr><td>Amazon Nova Act</td><td>UI automation</td><td>Agent-hour</td></tr>
+<tr><td>AgentCore Runtime</td><td>Agent hosting</td><td>vCPU + memory</td></tr>
+<tr><td>AgentCore Gateway</td><td>Tool surface</td><td>Requests</td></tr>
+<tr><td>AgentCore Memory</td><td>Context store</td><td>Storage + requests</td></tr>
+<tr><td>AgentCore Browser</td><td>Fallback executor</td><td>Session hours</td></tr>
+<tr><td>DynamoDB</td><td>Hot state</td><td>R/W capacity</td></tr>
+<tr><td>S3 + Object Lock</td><td>Audit, bundles</td><td>Storage</td></tr>
+<tr><td>OpenSearch Serverless</td><td>Run search</td><td>OCU hours</td></tr>
+<tr><td>Lambda + API Gateway</td><td>Control plane</td><td>Invocations</td></tr>
+<tr><td>EventBridge</td><td>Events + scheduling</td><td>Events published</td></tr>
+<tr><td>Cognito</td><td>Auth</td><td>MAU</td></tr>
+<tr><td>Secrets Manager + KMS</td><td>Credentials + encryption</td><td>Secrets + key usage</td></tr>
+</table>
+
+<p><strong>Estimated monthly cost per customer (pilot):</strong> ~$143 infrastructure + ~$0.55 × runs/day inference.</p>
+
+<hr>
+<p style="text-align:center;color:var(--muted);margin-top:3rem">
+BackOfficePilot — Built with Claude Opus 4.6 + Amazon Nova Act on AWS Bedrock AgentCore<br>
+Document generated: May 2026
+</p>
+
+</div>
+</body>
+</html>

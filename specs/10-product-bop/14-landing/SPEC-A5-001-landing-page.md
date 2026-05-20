@@ -6,8 +6,11 @@ status: approved
 owner: founder
 depends-on: []
 covers-req: []
-version: 0.1.0
-last-updated: 2026-05-19
+version: 0.2.0
+last-updated: 2026-05-20
+revision-history:
+  - { version: 0.1.0, date: 2026-05-19, author: founder, note: "Initial spec for landing.html." }
+  - { version: 0.2.0, date: 2026-05-20, author: founder, note: "Added what_it_solves.html companion page; landing.html updated with nav link + problem-section deep-dive link." }
 ---
 
 # SPEC-A5-001 — Landing page specification
@@ -119,3 +122,51 @@ Secondary CTA (read proposal): hero only.
 - Customer logo strip once we have signed pilots.
 - Investor / accelerator badge strip once accepted.
 - A/B test framework for headline copy.
+
+---
+
+## Companion page: `what_it_solves.html` (added v0.2.0)
+
+A long-form explainer designed to convert sophisticated buyers who want the *why* before they
+book a call. Linked from the landing nav ("What we solve") and from a sentence under the
+problem section ("Read the deep dive →").
+
+### Audience
+
+Same as the landing page primary audience — CFOs, COOs, Heads of Operations at mid-market
+BFSI firms — but specifically those who arrived via a content link, a press mention, or a
+warm intro and want depth before scheduling a call.
+
+### Sections
+
+1. Page head + table of contents (8 anchor links).
+2. The status quo — three composite scenarios (loan ops clerk, reconciliation analyst, KYC
+   reviewer) with time/cost/error stats.
+3. Anatomy of the pain — five workflow pain cards (invoice reconciliation, KYC, loan ops,
+   account recon, regulatory filing) + a shared-signature card.
+4. Why prior automation missed this customer — 4-row comparison table covering Big-4
+   consultants, enterprise RPA, copilots, generalist agents.
+5. The compounding damage — four damage cards (linear headcount, compliance debt, attrition,
+   downturn risk).
+6. How BackOfficePilot solves it — six solution cards (two brains, orchestrator, audit log,
+   drives existing UIs, outcome-priced, leave-behind).
+7. Before / After operating-model change — two-column comparison.
+8. Per-workflow ROI math — four cards with concrete numbers per workflow type.
+9. Industry breakdown — banks, insurance, asset mgmt, fintechs (year 1) + healthcare RCM
+   (year 2).
+10. CTA + pilot terms — two CTAs back to the landing page contact form.
+
+### Brand consistency
+
+Uses the same CSS custom-property palette, font stack, brand mark, and nav shell as the
+landing page. Both files include the brand mark SVG inline so they can be deployed as static
+HTML to any host (Vercel, S3+CloudFront, Netlify) without external assets.
+
+### Cross-linking
+
+- `what_it_solves.html` nav → links back to landing sections (How it works, Calculator,
+  Security, Book a call).
+- Landing nav → "What we solve" links to `what_it_solves.html`.
+- Landing problem section → "Read the deep dive →" link.
+- CTA at the bottom of `what_it_solves.html` → both "Book a call" (landing.html#contact)
+  and "Back to the landing page" (landing.html).
